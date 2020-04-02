@@ -5,7 +5,7 @@
 
   fetch(url + '/video', {
   method: 'POST', 
-  mode: 'cors', 
+  mode: 'no-cors', 
   body: JSON.stringify({'email': 'navbahl@hotmail.com', 'password': 'Harsh@123' }),
   redirect: 'follow',
   headers: new Headers({
