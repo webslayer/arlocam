@@ -1,7 +1,11 @@
 from flask import Flask, redirect, url_for, request
 import json
 from video_links import get_links
+from flask_cors import CORS
+
 app = Flask(__name__)
+
+CORS(app)
 
 @app.route('/success/')
 def success(name):
@@ -14,7 +18,6 @@ def login():
    username = data["email"]
    password = data["password"]
    links = get_links(username, password)
-   print(links)
    return json.dumps(links)
 
 
