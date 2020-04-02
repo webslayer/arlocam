@@ -12,7 +12,7 @@
       'Accept': 'application/json',
       'Content-Type': 'application/json'
   })
-}).then(function() { var videoLinkJson = res.values;
+}).then(function() { var videoLinkJson = res.values();
                      var videoLinkArrays = Object.videoLinkJson;
                      console.log(videoLinkArrays);   
                         })
