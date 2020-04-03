@@ -6,8 +6,8 @@ import sys, os
 sys.path.append('..')
 #import json
 
-USERNAME = 'harshbnshah@gmail.com'
-PASSWORD = 'Vignesh1234'
+USERNAME = 'navbahl@hotmail.com'
+PASSWORD = 'Harsh@123'
 
 videopath = 'videos'
 

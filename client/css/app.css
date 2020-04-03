@@ -1,0 +1,12 @@
+body {
+	background: gray
+}
+
+.lead {
+	font-size: 2rem;
+}
+
+ul {
+	display: table;
+  	margin: 0 auto;
+}

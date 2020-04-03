@@ -1,33 +1,53 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>jQuery Ajax</title>
-    <link rel="stylesheet" href="main.css">
+<head>
+	<title></title>
+		<meta charset="utf-8">
+    	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	    <link rel="stylesheet" type="text/css" href="css/app.css">
 
-  </head>
-  <body>
-  
-      <h1>API</h1>
-   
-       
-          <h2>Coffee Orders</h2>
-          <ul id="orders"></ul>
-
-          <!-- in case older than IE 8, use script with type="text/template" instead of template -->
-         
-
-      
-      
-            <h4>Add a Coffee Order</h4>
-            <p>name: <input type="text" id="name"></p>
-            <p>drink: <input type="text" id="drink"></p>
-            <button id="add-order">Add!</button>
-         
-
- 
-    <script src="jquery-3.1.1.min.js"></script>
-    <script src="index7.js"></script>
-    
-  </body>
+</head>
+<body>
+<div class="container-fluid mt-3"> 
+	<div class="row  justify-content-around align-items-center">
+		<div class=" col-12">
+			<p class="text-center lead">Working</p> 
+			<p class="border">
+				<ul class="border">
+					<li>
+						The JavaScript code consists of the an array with links to multiple sources of videos.
+					</li>
+				
+				
+					<li>
+						This code will detect when the video ends and will automatically chain the next video andstart playing it.
+					</li>
+					
+					<li>
+						This is not the final product. The purpose of this page is to demonstrate the working and nothing else.
+					</li>
+					<li>
+						Video 1: Sunrise, Video 2: Sunset	
+					</li>
+				</ul>
+			</p>
+		</div>
+	</div>
+	<div class="row border justify-content-around align-items-center">
+		<div class="border col-12 col-lg-6">
+			<video src="https://arlos3-prod-z1.s3.amazonaws.com/29920010f7f549eb80481dacf6cf48cc/NYFK6443-100-48045302/5TF18A71C50DE/recordings/1585932520263.mp4?AWSAccessKeyId=AKIA2BAHQO5QSVBZC5SC&Expires=1586019631&Signature=jlYulduXviBfWnin8kR6QFIQAsk%3D" id="timelapse" class="border img-fluid" controls style="background:black">
+			</video> 
+		</div>
+	</div>
+	
+</div>
+	
+<!-- js -->
+<script type="text/javascript" src="index7.js"></script>
+<!-- jquery popper bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+</body>
 </html>
