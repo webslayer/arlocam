@@ -10,7 +10,7 @@ async function postData(url = '', data = {}) {
     },
     body: JSON.stringify(data) // body data type must match "Content-Type" header
   });
-  return await JSON.parse(response); // parses JSON response into native JavaScript objects
+  return await response.json(); // parses JSON response into native JavaScript objects
 }
 
 
