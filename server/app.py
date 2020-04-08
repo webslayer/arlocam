@@ -13,9 +13,7 @@ CORS(app)
 app.config['SECRET_KEY'] = b'U0aV$1oO$IK#GEj@'
 
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_jobstore('redis',
-                       jobs_key='example.jobs',
-                       run_times_key='example.run_times')
+scheduler.add_jobstore('mongodb', collection='snap_jobs')
 
 
 @app.route('/')

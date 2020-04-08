@@ -1,6 +1,7 @@
 from arlo import Arlo
 from datetime import timedelta, date
 import datetime
+from storage import *
 
 
 class ArloWrap():
@@ -48,8 +49,15 @@ class ArloWrap():
 
             # Download snapshot.
             dname = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
-            self.arlo.DownloadSnapshot(url, f'snapshot-{dname}.jpg')
-            print("downloaded")
+            # self.arlo.DownloadSnapshot(url, f'snapshot-{dname}.jpg')
+
+            response = upload_file(url, "arlocam-snapshots",
+                                   f'snapshot-{dname}.jpg')
+
+            print("uploaded shot")
+
+            return response
 
         except Exception as e:
             print(e)
+            return None
