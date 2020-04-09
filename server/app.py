@@ -4,6 +4,7 @@ from markupsafe import escape
 from arlo_wrap import ArloWrap
 from flask_cors import CORS
 import atexit
+import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
@@ -59,7 +60,14 @@ def snapshot():
     username = session["username"]
     password = session["password"]
     arlo = ArloWrap(username, password)
-    scheduler.add_job(arlo.take_snapshot, 'interval', minutes=x)
+    scheduler.add_job(arlo.take_snapshot,
+                      'interval',
+                      minutes=x,
+                      replace_existing=True,
+                      coalesce=True,
+                      misfire_grace_time=1000,
+                      next_run_time=datetime.datetime.now(),
+                      jobstore='mongo')
     try:
         scheduler.start()
     except (KeyboardInterrupt, SystemExit):
@@ -71,7 +79,7 @@ def snapshot():
 
 @app.route('/snapstop')
 def snapstop():
-    scheduler.remove_all_jobs()
+    scheduler.shutdown()
     return json.dumps({'success': True}), 200, {
         'ContentType': 'application/json'
     }
@@ -86,3 +94,7 @@ def timelapse():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    try:
+        scheduler.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
