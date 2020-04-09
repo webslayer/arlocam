@@ -5,7 +5,9 @@ from arlo_wrap import ArloWrap
 from flask_cors import CORS
 import atexit
 import datetime
+from apscheduler.schedulers import SchedulerAlreadyRunningError
 from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 app = Flask(__name__)
 CORS(app)
@@ -14,7 +16,6 @@ CORS(app)
 app.config['SECRET_KEY'] = b'U0aV$1oO$IK#GEj@'
 
 scheduler = BackgroundScheduler(daemon=True)
-scheduler.add_jobstore('mongodb', collection='snap_jobs')
 
 
 @app.route('/')
@@ -66,12 +67,11 @@ def snapshot():
                       replace_existing=True,
                       coalesce=True,
                       misfire_grace_time=1000,
-                      next_run_time=datetime.datetime.now(),
-                      jobstore='mongo')
+                      next_run_time=datetime.datetime.now())
     try:
         scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        pass
+    except SchedulerAlreadyRunningError:
+        scheduler.resume()
     return json.dumps({'success': True}), 200, {
         'ContentType': 'application/json'
     }
@@ -94,7 +94,4 @@ def timelapse():
 
 if __name__ == '__main__':
     app.run(debug=True)
-    try:
-        scheduler.start()
-    except (KeyboardInterrupt, SystemExit):
-        pass
+    atexit.register(lambda: scheduler.shutdown())

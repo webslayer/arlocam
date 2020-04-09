@@ -18,7 +18,7 @@ def upload_file(url, bucket, file_name):
     im1 = Image.open(IMAGE_FILE)
     # here, we create an empty string buffer
     buffer = BytesIO()
-    im1.save(buffer, "JPEG", quality=50)
+    im1.save(buffer, "JPEG", quality=60)
     buffer.seek(0)
     print("compressed")
 

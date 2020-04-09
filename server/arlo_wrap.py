@@ -2,13 +2,19 @@ from arlo import Arlo
 from datetime import timedelta, date
 import datetime
 from storage import *
+from pymongo import MongoClient
 
 
 class ArloWrap():
     """docstring for ArloWrap"""
     def __init__(self, USERNAME, PASSWORD):
         super(ArloWrap, self).__init__()
+        self.USERNAME = USERNAME
+        self.PASSWORD = PASSWORD
         self.arlo = Arlo(USERNAME, PASSWORD)
+        self.client = MongoClient()
+        self.db = self.client.arlocam
+        self.collection = self.db.snapshots
 
     def get_links(self):
         try:
@@ -34,7 +40,7 @@ class ArloWrap():
 
     def take_snapshot(self):
         try:
-
+            self.arlo = Arlo(self.USERNAME, self.PASSWORD)
             # Get the list of devices and filter on device type to only get the basestation.
             # This will return an array which includes all of the basestation's associated metadata.
             basestations = self.arlo.GetDevices('basestation')
@@ -45,16 +51,23 @@ class ArloWrap():
 
             # Trigger the snapshot.
             url = self.arlo.TriggerFullFrameSnapshot(basestations[0],
-                                                     cameras[0])
+                                                     cameras[1])
 
-            # Download snapshot.
-            dname = datetime.datetime.now().strftime("%d%m%Y%H%M%S")
-            # self.arlo.DownloadSnapshot(url, f'snapshot-{dname}.jpg')
+            now = datetime.datetime.utcnow().replace(microsecond=0)
+            dname = now.isoformat()
+            fname = f'snapshot-{dname}.jpg'
 
-            response = upload_file(url, "arlocam-snapshots",
-                                   f'snapshot-{dname}.jpg')
+            result = self.collection.insert_one({
+                "file_name": fname,
+                "created_date": now
+            })
+
+            print(f"Data inserted with record ids: {result}")
+
+            response = upload_file(url, "arlocam-snapshots", fname)
 
             print("uploaded shot")
+            response = self.arlo.Logout()
 
             return response
 
