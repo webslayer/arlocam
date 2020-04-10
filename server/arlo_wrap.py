@@ -1,9 +1,11 @@
-from arlo import Arlo
-from datetime import timedelta, date
-import datetime
-from storage import *
-from pymongo import MongoClient
 import time
+from datetime import date, datetime, timedelta
+
+import pytz
+from arlo import Arlo
+from pymongo import MongoClient
+
+from storage import *
 
 
 class ArloWrap:
@@ -54,8 +56,8 @@ class ArloWrap:
             url = self.arlo.TriggerFullFrameSnapshot(basestations[0], cameras[1])
 
             if url is not None:
-
-                now = datetime.datetime.utcnow().replace(microsecond=0)
+                timezone = pytz.timezone("Europe/London")
+                now = datetime.now(timezone).replace(microsecond=0)
                 dname = now.isoformat()
                 fname = f"snapshot-{dname}.jpg"
 

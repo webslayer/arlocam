@@ -1,9 +1,10 @@
 import logging
-import boto3
-from io import StringIO, BytesIO
-from PIL import Image
-import requests
+from io import BytesIO, StringIO
 from urllib.request import urlopen
+
+import boto3
+import requests
+from PIL import Image
 
 
 def upload_file(url, bucket, file_name):

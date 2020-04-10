@@ -1,17 +1,17 @@
-from flask import Flask, redirect, url_for, request
+import atexit
 import json
-from markupsafe import escape
-from arlo_wrap import ArloWrap
-from flask_cors import CORS
-import atexit
-import datetime
-from apscheduler.schedulers import (
-    SchedulerAlreadyRunningError,
-    SchedulerNotRunningError,
-)
+from datetime import date, datetime, timedelta
+
+import pytz
+from apscheduler.schedulers import (SchedulerAlreadyRunningError,
+                                    SchedulerNotRunningError)
 from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
+from flask import Flask, redirect, request, url_for
+from flask_cors import CORS
+from markupsafe import escape
 from pymongo import MongoClient
+
+from arlo_wrap import ArloWrap
 
 app = Flask(__name__)
 CORS(app)
@@ -73,7 +73,7 @@ def snapshot():
         replace_existing=True,
         coalesce=True,
         misfire_grace_time=10,
-        next_run_time=datetime.datetime.now(),
+        next_run_time=datetime.now(),
     )
     for job in scheduler.get_jobs():
         print(
@@ -110,7 +110,13 @@ def onrestart():
 
 @app.route("/timelapse", methods=["POST"])
 def timelapse():
-    
+    timezone = pytz.timezone("Europe/London")
+    today = datetime.now(timezone) - timedelta(days=0)
+    seven_days_ago = datetime.now(timezone) - timedelta(days=7)
+    for shot in db.snapshots.find(
+        {"created_date": {"$gte": seven_days_ago, "$lt": today}}
+    ):
+        print(shot)
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
