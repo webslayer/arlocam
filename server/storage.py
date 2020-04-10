@@ -10,7 +10,7 @@ def upload_file(url, bucket, file_name):
     """
     Function to upload a file to an S3 bucket
     """
-    s3 = boto3.client('s3')
+    s3 = boto3.client("s3")
     req_for_image = requests.get(url)
     # file_object_from_req = req_for_image.raw
     IMAGE_FILE = BytesIO(req_for_image.content)
@@ -32,7 +32,7 @@ def download_file(file_name, bucket):
     """
     Function to download a given file from an S3 bucket
     """
-    s3 = boto3.client('s3')
+    s3 = boto3.client("s3")
     output = f"downloads/{file_name}"
     s3.download_file(bucket, file_name, output)
 
@@ -47,13 +47,12 @@ def create_presigned_url(bucket_name, object_name, expiration=3600):
     """
 
     # Generate a presigned URL for the S3 object
-    s3_client = boto3.client('s3')
-    response = s3_client.generate_presigned_url('get_object',
-                                                Params={
-                                                    'Bucket': bucket_name,
-                                                    'Key': object_name
-                                                },
-                                                ExpiresIn=expiration)
+    s3_client = boto3.client("s3")
+    response = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket_name, "Key": object_name},
+        ExpiresIn=expiration,
+    )
 
     # The response contains the presigned URL
     return response

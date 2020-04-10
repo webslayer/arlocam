@@ -3,25 +3,26 @@ from datetime import timedelta, date
 import datetime
 from storage import *
 from pymongo import MongoClient
+import time
 
 
-class ArloWrap():
+class ArloWrap:
     """docstring for ArloWrap"""
+
     def __init__(self, USERNAME, PASSWORD):
         super(ArloWrap, self).__init__()
         self.USERNAME = USERNAME
         self.PASSWORD = PASSWORD
-        self.arlo = Arlo(USERNAME, PASSWORD)
         self.client = MongoClient()
         self.db = self.client.arlocam
         self.collection = self.db.snapshots
+        self.arlo = Arlo(self.USERNAME, self.PASSWORD)
 
     def get_links(self):
         try:
 
             today = (date.today() - timedelta(days=0)).strftime("%Y%m%d")
-            seven_days_ago = (date.today() -
-                              timedelta(days=7)).strftime("%Y%m%d")
+            seven_days_ago = (date.today() - timedelta(days=7)).strftime("%Y%m%d")
 
             # Get all of the recordings for a date range.
             library = self.arlo.GetLibrary(seven_days_ago, today)
@@ -30,8 +31,8 @@ class ArloWrap():
             # Iterate through the recordings in the library.
             for i, recording in enumerate(library):
                 # Get video as a chunked stream; this function returns a generator.
-                stream = recording['presignedContentUrl']
-                links[f'links{i}'] = stream
+                stream = recording["presignedContentUrl"]
+                links[f"links{i}"] = stream
 
             return links
 
@@ -40,36 +41,37 @@ class ArloWrap():
 
     def take_snapshot(self):
         try:
-            self.arlo = Arlo(self.USERNAME, self.PASSWORD)
+            start = time.time()
             # Get the list of devices and filter on device type to only get the basestation.
             # This will return an array which includes all of the basestation's associated metadata.
-            basestations = self.arlo.GetDevices('basestation')
+            basestations = self.arlo.GetDevices("basestation")
 
             # Get the list of devices and filter on device type to only get the cameras.
             # This will return an array of cameras, including all of the cameras' associated metadata.
-            cameras = self.arlo.GetDevices('camera')
+            cameras = self.arlo.GetDevices("camera")
 
             # Trigger the snapshot.
-            url = self.arlo.TriggerFullFrameSnapshot(basestations[0],
-                                                     cameras[1])
+            url = self.arlo.TriggerFullFrameSnapshot(basestations[0], cameras[1])
 
-            now = datetime.datetime.utcnow().replace(microsecond=0)
-            dname = now.isoformat()
-            fname = f'snapshot-{dname}.jpg'
+            if url is not None:
 
-            result = self.collection.insert_one({
-                "file_name": fname,
-                "created_date": now
-            })
+                now = datetime.datetime.utcnow().replace(microsecond=0)
+                dname = now.isoformat()
+                fname = f"snapshot-{dname}.jpg"
 
-            print(f"Data inserted with record ids: {result}")
+                result = self.collection.insert_one(
+                    {"file_name": fname, "created_date": now}
+                )
 
-            response = upload_file(url, "arlocam-snapshots", fname)
+                print(f"Data inserted with record ids: {result}")
 
-            print("uploaded shot")
-            response = self.arlo.Logout()
+                upload_file(url, "arlocam-snapshots", fname)
 
-            return response
+                print("uploaded shot")
+            else:
+                print("skipped")
+
+            print(time.time() - start)
 
         except Exception as e:
             print(e)
