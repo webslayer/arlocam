@@ -23,7 +23,7 @@ def login():
 
 @app.route('/ip')
 def login():
-   r = requests.get('http://ipinfo.io/json')
+   r = requests.get('https://ipapi.co/json')
    return json.dumps(r.json())
 
 
