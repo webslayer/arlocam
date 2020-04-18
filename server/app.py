@@ -1,24 +1,43 @@
 import atexit
 import json
+import os
 from datetime import date, datetime, timedelta
 
+import cv2
 import pytz
-from apscheduler.schedulers import (SchedulerAlreadyRunningError,
-                                    SchedulerNotRunningError)
-from apscheduler.schedulers.background import BackgroundScheduler
+from crochet import run_in_reactor, setup
 from flask import Flask, redirect, request, url_for
 from flask_cors import CORS
 from markupsafe import escape
 from pymongo import MongoClient
+from twisted.internet import reactor, task
 
 from arlo_wrap import ArloWrap
+from storage import download_file
 
+setup()
 app = Flask(__name__)
 CORS(app)
 
-scheduler = BackgroundScheduler(daemon=True)
 client = MongoClient()
 db = client.arlocam
+
+
+class EventLoop:
+    def __init__(self):
+        super().__init__()
+
+    @run_in_reactor
+    def loopin(self, func, x):
+
+        self.l = task.LoopingCall(func)
+        self.l.start(int(x), now=True)
+
+    def stop(self):
+        self.l.stop()
+
+
+el = EventLoop()
 
 
 @app.route("/")
@@ -65,38 +84,19 @@ def snapshot():
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
-    scheduler.remove_all_jobs()
-    scheduler.add_job(
-        arlo.take_snapshot,
-        "cron",
-        second=x,
-        replace_existing=True,
-        coalesce=True,
-        misfire_grace_time=10,
-        next_run_time=datetime.now(),
-    )
-    for job in scheduler.get_jobs():
-        print(
-            "name: %s, trigger: %s, next run: %s, handler: %s"
-            % (job.name, job.trigger, job.next_run_time, job.func)
-        )
-    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
     try:
-        scheduler.shutdown()
-    except SchedulerNotRunningError:
-        scheduler.start()
-    except SchedulerAlreadyRunningError:
-        scheduler.resume()
+        el.stop()
+    except:
+        pass
+    el.loopin(arlo.take_snapshot, x)
+
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
 @app.route("/snapstop")
 def snapstop():
-    try:
-        scheduler.shutdown()
-    except SchedulerNotRunningError:
-        pass
-    db.snapjobs.update({"_id": 1}, {"$set": {"started": False}})
+    el.stop()
+    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
@@ -111,12 +111,18 @@ def onrestart():
 @app.route("/timelapse", methods=["POST"])
 def timelapse():
     timezone = pytz.timezone("Europe/London")
-    today = datetime.now(timezone) - timedelta(days=0)
-    seven_days_ago = datetime.now(timezone) - timedelta(days=7)
+    today = datetime.now(timezone) - timedelta(minutes=0)
+    seven_days_ago = datetime.now(timezone) - timedelta(minutes=30000)
+    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    video = cv2.VideoWriter("timelapse.avi", fourcc, 20, (1904, 1072))
     for shot in db.snapshots.find(
         {"created_date": {"$gte": seven_days_ago, "$lt": today}}
     ):
-        print(shot)
+        image_fname = shot["file_name"]
+        download_file(image_fname, "arlocam-snapshots")
+        print(f"downloaded {image_fname}")
+        video.write(cv2.imread(os.path.join("snap_temp", image_fname)))
+    video.release()
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 

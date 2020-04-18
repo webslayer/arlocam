@@ -5,7 +5,7 @@ import pytz
 from arlo import Arlo
 from pymongo import MongoClient
 
-from storage import *
+from storage import upload_file
 
 
 class ArloWrap:
