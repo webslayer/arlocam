@@ -2,6 +2,7 @@ from flask import Flask, redirect, url_for, request
 import json
 from video_links import get_links
 from flask_cors import CORS
+import requests
 
 app = Flask(__name__)
 
@@ -20,6 +21,10 @@ def login():
    links = get_links(username, password)
    return json.dumps(links)
 
+@app.route('/ip')
+def login():
+   r = requests.get('http://ipinfo.io/json')
+   return json.dumps(r.json())
 
 
 if __name__ == '__main__':
