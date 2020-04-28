@@ -1,19 +1,20 @@
 import atexit
 import json
 import os
-from datetime import date, datetime, timedelta
+import time
 
-import cv2
-import pytz
 from crochet import run_in_reactor, setup
-from flask import Flask, redirect, request, url_for
+from flask import Flask, Response, redirect, render_template, request, url_for
 from flask_cors import CORS
 from markupsafe import escape
 from pymongo import MongoClient
+from redis import Redis
+from rq import Queue
 from twisted.internet import reactor, task
 
 from arlo_wrap import ArloWrap
-from storage import download_file
+from timelapse import create_timelapse
+from worker import conn
 
 setup()
 app = Flask(__name__)
@@ -21,6 +22,8 @@ CORS(app)
 
 client = MongoClient()
 db = client.arlocam
+
+q1 = Queue(connection=conn)
 
 
 class EventLoop:
@@ -67,16 +70,6 @@ def logout():
     return redirect(url_for("index"))
 
 
-@app.route("/video")
-def video():
-    doc = db.auth.find_one()
-    username = doc["username"]
-    password = doc["password"]
-    arlo = ArloWrap(username, password)
-    links = arlo.get_links()
-    return json.dumps(links)
-
-
 @app.route("/snapshot")
 def snapshot():
     x = request.args.get("x")
@@ -84,11 +77,13 @@ def snapshot():
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
+    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
     try:
         el.stop()
     except:
         pass
-    el.loopin(arlo.take_snapshot, x)
+    job = lambda: q1.enqueue(arlo.take_snapshot)
+    el.loopin(job, x)
 
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
@@ -110,20 +105,24 @@ def onrestart():
 
 @app.route("/timelapse", methods=["POST"])
 def timelapse():
-    timezone = pytz.timezone("Europe/London")
-    today = datetime.now(timezone) - timedelta(minutes=0)
-    seven_days_ago = datetime.now(timezone) - timedelta(minutes=30000)
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    video = cv2.VideoWriter("timelapse.avi", fourcc, 20, (1904, 1072))
-    for shot in db.snapshots.find(
-        {"created_date": {"$gte": seven_days_ago, "$lt": today}}
-    ):
-        image_fname = shot["file_name"]
-        download_file(image_fname, "arlocam-snapshots")
-        print(f"downloaded {image_fname}")
-        video.write(cv2.imread(os.path.join("snap_temp", image_fname)))
-    video.release()
+    db.progress.update_one({"_id": 1}, {"$set": {"started": True, "x": 0}}, upsert=True)
+    create_timelapse()
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
+
+
+@app.route("/timelapse_progress")
+def timelapse_progress():
+    def generate():
+        doc = db.progress.find_one()
+        x = doc["x"] if doc and doc["started"] else 0
+
+        while x <= 100:
+            doc = db.progress.find_one()
+            x = doc["x"] if doc and doc["started"] else 0
+            yield f"data:{x:.2f}\n\n"
+            time.sleep(10)
+
+    return Response(generate(), mimetype="text/event-stream")
 
 
 if __name__ == "__main__":

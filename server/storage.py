@@ -4,6 +4,7 @@ from io import BytesIO, StringIO
 from urllib.request import urlopen
 
 import boto3
+import botocore
 import requests
 from PIL import Image
 

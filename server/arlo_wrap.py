@@ -7,6 +7,10 @@ from pymongo import MongoClient
 
 from storage import upload_file
 
+client = MongoClient()
+db = client.arlocam
+collection = db.snapshots
+
 
 class ArloWrap:
     """docstring for ArloWrap"""
@@ -15,31 +19,7 @@ class ArloWrap:
         super(ArloWrap, self).__init__()
         self.USERNAME = USERNAME
         self.PASSWORD = PASSWORD
-        self.client = MongoClient()
-        self.db = self.client.arlocam
-        self.collection = self.db.snapshots
         self.arlo = Arlo(self.USERNAME, self.PASSWORD)
-
-    def get_links(self):
-        try:
-
-            today = (date.today() - timedelta(days=0)).strftime("%Y%m%d")
-            seven_days_ago = (date.today() - timedelta(days=7)).strftime("%Y%m%d")
-
-            # Get all of the recordings for a date range.
-            library = self.arlo.GetLibrary(seven_days_ago, today)
-            links = dict()
-
-            # Iterate through the recordings in the library.
-            for i, recording in enumerate(library):
-                # Get video as a chunked stream; this function returns a generator.
-                stream = recording["presignedContentUrl"]
-                links[f"links{i}"] = stream
-
-            return links
-
-        except Exception as e:
-            return str(e)
 
     def take_snapshot(self):
         try:
@@ -61,7 +41,7 @@ class ArloWrap:
                 dname = now.isoformat()
                 fname = f"snapshot-{dname}.jpg"
 
-                result = self.collection.insert_one(
+                result = collection.insert_one(
                     {"file_name": fname, "created_date": now}
                 )
 
