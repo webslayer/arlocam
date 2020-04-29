@@ -13,3 +13,4 @@ Flask_Cors==3.0.8
 arlo==1.2.35
 pytz==2019.3
 gunicorn
+pillow
