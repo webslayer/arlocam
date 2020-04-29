@@ -59,8 +59,7 @@ def download_file(file_name, bucket):
     Function to download a given file from an S3 bucket
     """
     s3 = boto3.client("s3")
-    os.makedirs("snap_temp", exist_ok=True)
-    output = f"snap_temp/{file_name}"
+    output = f"/tmp/{file_name}"
     s3.download_file(bucket, file_name, output)
 
 
