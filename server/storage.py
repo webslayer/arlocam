@@ -4,8 +4,8 @@ from io import BytesIO, StringIO
 from urllib.request import urlopen
 
 import boto3
-from botocore.exceptions import ClientError
 import requests
+from botocore.exceptions import ClientError
 from PIL import Image
 
 
