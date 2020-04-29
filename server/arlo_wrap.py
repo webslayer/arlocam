@@ -5,9 +5,10 @@ import pytz
 from arlo import Arlo
 from pymongo import MongoClient
 
-from storage import upload_file
+from storage import upload_image_file
 
-client = MongoClient()
+mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
+client = MongoClient(mongo_uri)
 db = client.arlocam
 collection = db.snapshots
 
@@ -38,16 +39,15 @@ class ArloWrap:
             if url is not None:
                 timezone = pytz.timezone("Europe/London")
                 now = datetime.now(timezone).replace(microsecond=0)
-                dname = now.isoformat()
-                fname = f"snapshot-{dname}.jpg"
+                fname = f"snapshot-{now.isoformat()}.jpg"
 
                 result = collection.insert_one(
                     {"file_name": fname, "created_date": now}
                 )
 
-                print(f"Data inserted with record ids: {result}")
+                print(f"Data inserted with record ids: {result.inserted_id}")
 
-                upload_file(url, "arlocam-snapshots", fname)
+                upload_image_file(url, "arlocam-snapshots", fname)
 
                 print("uploaded shot")
             else:
