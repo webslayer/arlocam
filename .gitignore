@@ -130,6 +130,5 @@ dmypy.json
 .vscode/
 
 server/snap_temp
-timelapse*
 
 dump.rdb
