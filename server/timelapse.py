@@ -1,5 +1,6 @@
 import os
 from datetime import date, datetime, timedelta
+import time
 
 import botocore
 import cv2
@@ -16,6 +17,7 @@ db = client.arlocam
 
 @run_in_reactor
 def create_timelapse(datefrom, dateto):
+    start = time.time()
     timezone = pytz.timezone("Europe/London")
 
     now = datetime.now(timezone).replace(microsecond=0)
@@ -47,7 +49,7 @@ def create_timelapse(datefrom, dateto):
         db.progress.update_one({"_id": 1}, {"$set": {"x": prog}})
     video.release()
     print("done")
-    upload_file(f"/tmp/{fname}", "arlocam-timelapse")
+    upload_file(f"/tmp/{fname}", "arlocam-timelapse", object_name=fname)
     os.remove(f"/tmp/{fname}")
     print("uploaded")
 
@@ -62,3 +64,4 @@ def create_timelapse(datefrom, dateto):
     print(f"Data inserted with record ids: {result.inserted_id}")
     prog = 100.0
     db.progress.update_one({"_id": 1}, {"$set": {"x": prog}})
+    print(time.time() - start)

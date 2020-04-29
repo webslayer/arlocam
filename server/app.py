@@ -92,7 +92,11 @@ def snapshot():
 
 @app.route("/snapstop")
 def snapstop():
-    el.stop()
+    try:
+        el.stop()
+    except:
+        pass
+    q1.empty()
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
