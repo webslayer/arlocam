@@ -84,6 +84,7 @@ def snapshot():
         el.stop()
     except:
         pass
+    q1.empty()
     job = lambda: q1.enqueue(arlo.take_snapshot)
     el.loopin(job, int(x))
 
