@@ -94,3 +94,4 @@ wrapt==1.11.2
 yapf==0.29.0
 yarg==0.1.9
 zope.interface==4.7.1
+dnspython
