@@ -93,10 +93,7 @@ def snapshot():
 
 @app.route("/snapstop")
 def snapstop():
-    try:
-        el.stop()
-    except:
-        pass
+    el.stop()
     queued_jobs = q1.jobs
     print(f"no. of jobs{len(queued_jobs)}")
     q1.empty()
