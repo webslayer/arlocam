@@ -15,6 +15,7 @@
 ##
 
 import requests
+import json
 from requests.exceptions import HTTPError
 
 class Request(object):
@@ -29,9 +30,9 @@ class Request(object):
             if stream is True:
                 return r
         elif method == 'PUT':
-            r = self.session.put(url, json=params, headers=headers)
+            r = self.session.put(url, data=params, headers=headers)
         elif method == 'POST':
-            r = self.session.post(url, json=params, headers=headers)
+            r = self.session.post(url, data=json.dumps(params), headers=headers)
 
         r.raise_for_status()
         body = r.json()

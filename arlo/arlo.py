@@ -126,20 +126,21 @@ class Arlo(object):
         self.password = password
 
         self.request = Request()
-        
+
         headers = {
-            'DNT': '1',
-            'schemaVersion': '1',
-            'Host': 'my.arlo.com',
-            'Content-Type': 'application/json; charset=utf-8;',
-            'Referer': 'https://my.arlo.com/',
-            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0',
+        "Content-Type": "application/json; charset=UTF-8",
+        'Referer': 'https://my.arlo.com/',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_1_2 like Mac OS X) AppleWebKit/604.3.5 (KHTML, like Gecko) Mobile/15B202 NETGEAR/v1 (iOS Vuezone)'
         }
 
-        body = self.request.post('https://my.arlo.com/hmsweb/login/v2', {'email': self.username, 'password': self.password}, headers=headers)
+        body = self.request.post('https://my.arlo.com/hmsweb/login/v2', {'email': self.username, 'password': self.password}, headers)
 
-        headers['Authorization'] = body['token']
-      
+        headers = {"Content-Type": "application/json; charset=UTF-8",
+        'Referer': 'https://my.arlo.com/',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_1_2 like Mac OS X) AppleWebKit/604.3.5 (KHTML, like Gecko) Mobile/15B202 NETGEAR/v1 (iOS Vuezone)',
+        'Authorization': body['token']
+        }
+
         self.request.session.headers.update(headers)
 
         self.user_id = body['userId']
@@ -408,7 +409,7 @@ class Arlo(object):
         if device['deviceType'] == 'arlobridge':
             return self.request.delete('https://my.arlo.com/hmsweb/users/locations/'+device.get('uniqueId')+'/modes/'+mode)
         elif not parentId or device.get('deviceId') == parentId:
-            return self.NotifyAndGetResponse(device, {"action":"delete","resource":"modes/"+mode,"publishResponse":True})
+            return self.NotifyAndGetResponse(basestation, {"action":"delete","resource":"modes/"+mode,"publishResponse":True})
         else:
             raise Exception('Only parent device modes and schedules can be deleted.');
 
@@ -832,11 +833,6 @@ class Arlo(object):
         You should probably do the same, although, the UI reflects the switch from calendar mode to say armed mode without explicitly setting calendar mode to inactive.
         """
         return self.request.put('https://my.arlo.com/hmsweb/users/locations/'+location_id, {'geoEnabled':active})
-
-    def GetDevice(self, device_name):
-        def is_device(device):
-            return device['deviceName'] == device_name
-        return list(filter(is_device, self.GetDevices()))[0]
 
     def GetDevices(self, device_type=None, filter_provisioned=None):
         """
