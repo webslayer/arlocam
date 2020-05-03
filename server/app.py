@@ -78,6 +78,7 @@ def snapshot():
     doc = db.auth.find_one()
     username = doc["username"]
     password = doc["password"]
+    print(username, password)
     arlo = ArloWrap(username, password)
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
     try:
