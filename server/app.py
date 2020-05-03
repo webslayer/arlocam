@@ -38,6 +38,7 @@ class EventLoop:
         self.l = task.LoopingCall(func)
         self.l.start(x, now=now)
 
+    @run_in_reactor
     def stop(self):
         self.l.stop()
 
