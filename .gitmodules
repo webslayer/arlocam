@@ -1,1 +1,4 @@
 
+[submodule "arlo"]
+	path = arlo
+	url = https://github.com/jeffreydwalter/arlo.git
