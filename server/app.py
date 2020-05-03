@@ -1,9 +1,11 @@
-import atexit
+import datetime
 import json
 import os
 import time
 
 import boto3
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from crochet import run_in_reactor, setup
 from flask import Flask, Response, redirect, render_template, request, url_for
 from flask_cors import CORS
@@ -27,23 +29,7 @@ db = client.arlocam
 
 q1 = Queue(connection=conn)
 
-
-class EventLoop:
-    def __init__(self):
-        super().__init__()
-
-    @run_in_reactor
-    def loopin(self, func, x, now=True):
-
-        self.l = task.LoopingCall(func)
-        self.l.start(x, now=now)
-
-    @run_in_reactor
-    def stop(self):
-        self.l.stop()
-
-
-el = EventLoop()
+scheduler = BackgroundScheduler()
 
 
 @app.route("/")
@@ -75,32 +61,49 @@ def logout():
 
 @app.route("/snapshot")
 def snapshot():
-    x = request.args.get("x")
+    seconds = request.args.get("x")
     doc = db.record.find_one()
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
-    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
-    try:
-        el.stop()
-    except:
-        pass
-    q1.empty()
-    job = lambda: q1.enqueue(arlo.take_snapshot)
-    el.loopin(job, int(x))
+    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": seconds}}, upsert=True)
 
+    q1.empty()
+
+    m, s = divmod(int(seconds), 60)
+    h, m = divmod(m, 60)
+
+    scheduler.remove_all_jobs()
+    scheduler.add_job(
+        q1.enqueue,
+        args=[arlo.take_snapshot],
+        trigger="interval",
+        hours=h,
+        minutes=m,
+        seconds=s,
+        next_run_time=datetime.datetime.now(),
+    )
+
+    if not scheduler.running:
+        scheduler.start()
+    
+    for job in scheduler.get_jobs():
+        print(
+            "name: %s, trigger: %s, next run: %s, handler: %s"
+            % (job.name, job.trigger, job.next_run_time, job.func)
+        )
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
 @app.route("/snapstop")
 def snapstop():
-    el.stop()
-    queued_jobs = q1.jobs
-    print(f"no. of jobs{len(queued_jobs)}")
+
+    scheduler.remove_all_jobs()
+
     q1.empty()
-    queued_jobs = q1.jobs
-    print(f"no. of jobs{len(queued_jobs)}")
+
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
+
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
