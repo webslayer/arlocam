@@ -49,8 +49,8 @@ el = EventLoop()
 def index():
     doc = db.record.find_one()
     if doc:
-        return json.dumps(doc)
-    return json.dumps(doc)
+        return "You are logged in"
+    return "You are not logged in"
 
 
 @app.route("/login", methods=["POST"])
@@ -78,7 +78,6 @@ def snapshot():
     doc = db.record.find_one()
     username = doc["username"]
     password = doc["password"]
-    print(username, password)
     arlo = ArloWrap(username, password)
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
     try:
