@@ -47,17 +47,17 @@ el = EventLoop()
 
 @app.route("/")
 def index():
-    doc = db.auth.find_one()
+    doc = db.record.find_one()
     if doc:
-        return "You are logged in"
-    return "You are not logged in"
+        return json.dumps(doc)
+    return json.dumps(doc)
 
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.data
     data = json.loads(data)
-    db.auth.update_one(
+    db.record.update_one(
         {"_id": 1},
         {"$set": {"username": data["email"], "password": data["password"]}},
         upsert=True,
@@ -68,14 +68,14 @@ def login():
 @app.route("/logout")
 def logout():
     # remove the username from the session if it's there
-    db.auth.delete_one({})
+    db.record.delete_one({})
     return redirect(url_for("index"))
 
 
 @app.route("/snapshot")
 def snapshot():
     x = request.args.get("x")
-    doc = db.auth.find_one()
+    doc = db.record.find_one()
     username = doc["username"]
     password = doc["password"]
     print(username, password)
