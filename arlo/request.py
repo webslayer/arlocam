@@ -33,6 +33,7 @@ class Request(object):
             r = self.session.put(url, data=params, headers=headers)
         elif method == 'POST':
             r = self.session.post(url, data=json.dumps(params), headers=headers)
+            print(r.text)
 
         r.raise_for_status()
         body = r.json()
