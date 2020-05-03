@@ -97,7 +97,11 @@ def snapstop():
         el.stop()
     except:
         pass
+    queued_jobs = q1.jobs
+    print(f"no. of jobs{len(queued_jobs)}")
     q1.empty()
+    queued_jobs = q1.jobs
+    print(f"no. of jobs{len(queued_jobs)}")
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
