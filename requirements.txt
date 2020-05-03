@@ -2,7 +2,6 @@ aiofiles==0.4.0
 amqp==2.5.2
 appdirs==1.4.3
 APScheduler==3.6.3
-arlo==1.2.35
 asn1crypto==1.3.0
 astroid==2.3.3
 attrs==19.3.0
@@ -95,3 +94,4 @@ yapf==0.29.0
 yarg==0.1.9
 zope.interface==4.7.1
 dnspython
+-e ./arlo
