@@ -84,15 +84,17 @@ def snapshot():
         next_run_time=datetime.datetime.now(),
     )
 
-    if not scheduler.running:
-        scheduler.start()
+    if scheduler.running:
+    	return "scheduler already running, stop that first", 400
+    else:
+    	scheduler.start()
     
     for job in scheduler.get_jobs():
         print(
             "name: %s, trigger: %s, next run: %s, handler: %s"
             % (job.name, job.trigger, job.next_run_time, job.func)
         )
-    return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
+    return "successfully started", 200
 
 
 @app.route("/snapstop")
