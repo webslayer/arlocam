@@ -157,7 +157,7 @@ def del_timelapse():
     data = request.data
     data = json.loads(data)
     for video in data:
-        file_name = video["title"]
+        file_name = data[video]["title"]
         delete_file("arlocam-timelapse", file_name)
         db.timelapse.delete_one({"file_name": file_name})
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
