@@ -21,11 +21,11 @@ def create_timelapse(datefrom, dateto):
     timezone = pytz.timezone("Europe/London")
 
     now = datetime.now(timezone).replace(microsecond=0)
-    fname = f"timelapse-{now}.avi"
+    fname = f"timelapse-{now}.mp4"
 
     datefrom = datetime.strptime(datefrom, "%d%m%Y")
     dateto = datetime.strptime(dateto, "%d%m%Y")
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    fourcc = cv2.VideoWriter_fourcc(*"MP4V")
     video = cv2.VideoWriter(f"/tmp/{fname}", fourcc, 20, (1904, 1072))
     count = db.snapshots.find(
         {"created_date": {"$gte": datefrom, "$lt": dateto}}
