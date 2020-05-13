@@ -2,6 +2,5 @@ libsm6
 libxrender1
 libfontconfig1
 libice6
-libx264-dev
 ffmpeg
 libvpx
