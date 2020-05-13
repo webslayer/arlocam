@@ -25,7 +25,7 @@ def create_timelapse(datefrom, dateto):
 
     datefrom = datetime.strptime(datefrom, "%d%m%Y")
     dateto = datetime.strptime(dateto, "%d%m%Y")
-    fourcc = cv2.VideoWriter_fourcc(*"avc1")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     video = cv2.VideoWriter(f"/tmp/{fname}", fourcc, 20, (1904, 1072))
     count = db.snapshots.find(
         {"created_date": {"$gte": datefrom, "$lt": dateto}}
@@ -49,7 +49,7 @@ def create_timelapse(datefrom, dateto):
         db.progress.update_one({"_id": 1}, {"$set": {"x": prog}})
     video.release()
     print("done")
-    # os.system(f"ffmpeg -i /tmp/{fname} -vcodec libx264 /tmp/{fname}")
+    os.system(f"ffmpeg -i /tmp/{fname} -vcodec libx264 /tmp/{fname}")
     upload_file(f"/tmp/{fname}", "arlocam-timelapse", object_name=fname)
     os.remove(f"/tmp/{fname}")
     print("uploaded")
