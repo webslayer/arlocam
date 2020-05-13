@@ -49,7 +49,7 @@ def create_timelapse(datefrom, dateto):
         db.progress.update_one({"_id": 1}, {"$set": {"x": prog}})
     video.release()
     print("done")
-    os.system(f"ffmpeg -i '/tmp/{fname}' -vcodec libx264 '/tmp/{fname}'")
+    os.system(f"ffmpeg -y -i '/tmp/{fname}' -vcodec libx264 '/tmp/{fname}'")
     upload_file(f"/tmp/{fname}", "arlocam-timelapse", object_name=fname)
     os.remove(f"/tmp/{fname}")
     print("uploaded")
