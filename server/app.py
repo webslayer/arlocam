@@ -178,6 +178,16 @@ def timelapse_progress():
     return Response(generate(), mimetype="text/event-stream")
 
 
+@app.route("/start_stream")
+def start_stream():
+    doc = db.record.find_one()
+    username = doc["username"]
+    password = doc["password"]
+    arlo = ArloWrap(username, password)
+
+    return arlo.start_stream()
+
+
 if __name__ == "__main__":
     onstartup()
     app.run(debug=True)
