@@ -63,6 +63,7 @@ def logout():
 def snapshot():
     seconds = request.args.get("x")
     doc = db.record.find_one()
+    print(doc)
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
@@ -181,6 +182,7 @@ def timelapse_progress():
 @app.route("/start_stream")
 def start_stream():
     doc = db.record.find_one()
+    print(doc)
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
