@@ -63,7 +63,6 @@ def logout():
 def snapshot():
     seconds = request.args.get("x")
     doc = db.record.find_one()
-    print(doc)
     username = doc["username"]
     password = doc["password"]
     arlo = ArloWrap(username, password)
