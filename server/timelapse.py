@@ -26,7 +26,7 @@ def create_timelapse(datefrom, dateto):
     datefrom = datetime.strptime(datefrom, "%d%m%Y")
     dateto = datetime.strptime(dateto, "%d%m%Y")
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    video = cv2.VideoWriter(f"/tmp/{fname}", fourcc, 20, (1904, 1072))
+    video = cv2.VideoWriter(f"/tmp/{fname}", fourcc, 24, (1904, 1072))
     count = db.snapshots.find(
         {"created_date": {"$gte": datefrom, "$lt": dateto}}
     ).count()
