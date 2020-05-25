@@ -1,31 +1,31 @@
 body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Aria, sans-serif;
+	padding: 50px;
+	font: 14px "Lucida Grande", Helvetica, Aria, sans-serif;
 }
 
 a {
-  color: #00B7FF;
+	color: #00b7ff;
 }
 
 ul {
-  padding: 0;
+	padding: 0;
 }
 
 ul li {
-  list-style-type: none;
-  background: #dfdfdf;
-  padding: 10px;
-  margin-bottom: 10px;
+	list-style-type: none;
+	background: #dfdfdf;
+	padding: 10px;
+	margin-bottom: 10px;
 }
 
 ul li .edit {
-  display: none;
+	display: none;
 }
 
 ul li.edit .edit {
-  display: initial;
+	display: initial;
 }
 
 ul li.edit .noedit {
-  display: none;
+	display: none;
 }

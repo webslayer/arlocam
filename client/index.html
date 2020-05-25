@@ -1,56 +1,145 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<title></title>
-		<meta charset="utf-8">
-    	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	    <link rel="stylesheet" type="text/css" href="css/app.css">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="css/app.css">
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.3/moment.min.js"></script>
+	<script>
+		let m = moment();
+		// var month = `${moment().subtract(1, 'months')}`;
+		// console.log(month)
+		// console.log(`${m.toISOString()}`)
 
 
+		// console.log(m.format("DDMMYYYY"))
+		// 	var year = m.subtract(1, 'years');
+		// 	console.log(year.format("DDMMYYYY"))
+
+		// var dateTo = m.format("DDMMYYYY");
+		// 	var year = m.subtract(1, 'years').add(1, 'days');
+		// 	var dateFrom = year.format("DDMMYYYY");
+
+		console.log(m.add(1, 'days').format("DDMMYYYY"));
+		var year = m.subtract(1, 'years').subtract(1, 'days');
+		console.log(year.format("DDMMYYYY"));
+
+		var source = new EventSource("https://arlocam.herokuapp.com/timelapse_progress");
+		source.onmessage = function (event) {
+			console.log(event.data)
+			$('.progress-bar').css('width', event.data + '%').attr('aria-valuenow', event.data);
+			$('.progress-bar-label').text(event.data + '%');
+
+			if (event.data == 100) {
+				source.close()
+			}
+		}
+
+	</script>
 </head>
-<body>
-<div class="container-fluid mt-3"> 
-	<div class="row  justify-content-around align-items-center">
-		<div class=" col-12">
-			<p class="text-center lead">Working</p> 
-			<p class="border">
-				<ul class="border">
-					<li>
-						The JavaScript code consists of the an array with links to multiple sources of videos. An api has been created to fetch the response from the main arlo api. 
-					</li>
 
-					<li>
-						With our custom api we can allow cors on our custom domain and it will work on the client side.
-					</li>
-				
-				
-					<li>
-						This code will detect when the video ends and will automatically chain the next video andstart playing it.
-					</li>
-					
-					<li>
-						This how the final product will work. The purpose of this page is to demonstrate the working and nothing else.
-					</li>
-					<li>
-						You need to have a good network connection to play the video faster
-					</li>
-				</ul>
-			</p>
-		</div>
-	</div>
-	<div class="row border justify-content-around align-items-center text-center">
+<body>
+	<div class="container-fluid mt-3">
+		<h1 class="text-center">Arlo</h1>
+		<!-- <div class="row border justify-content-around align-items-center text-center">
 		<div class="border col-12 col-lg-6">
-			<video src="https://arlos3-prod-z1.s3.amazonaws.com/29920010f7f549eb80481dacf6cf48cc/NYFK6443-100-48045302/5TF18A71C50DE/recordings/1585932520263.mp4?AWSAccessKeyId=AKIA2BAHQO5QSVBZC5SC&Expires=1586019631&Signature=jlYulduXviBfWnin8kR6QFIQAsk%3D" id="timelapse" class="border img-fluid" controls style="background:black">
+			<video src="https://s3.eu-west-2.amazonaws.com/arlocam-timelapse/timelapse-2020-05-13%2015%3A12%3A31%2B01%3A00.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJIOPZACTSKHZXTVA%2F20200513%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20200513T171127Z&X-Amz-Expires=604000&X-Amz-SignedHeaders=host&X-Amz-Signature=5e8cab77e06e157b0e9927274829b229feda5601d30c4d62cec44a2ec726f145" id="timelapse" class="border img-fluid" controls style="background:black">
 			</video> 
+		</div>
+	</div> -->
+
+		<!-- <div class="row  justify-content-around align-items-center text-center">
+		<div class="col-12 col-lg-6">
+			
 			<button onclick="setPlaySpeedToNormal()" type="button" class="btn btn-success text-center">Default</button>
 			<button onclick="setPlaySpeedToTwo()" type="button" class="btn btn-success text-center mx-3">2x</button>
 			<button onclick="setPlaySpeedToThree()" type="button" class="btn btn-success text-center">3x</button><br>
 		</div>
-	</div>
+	</div> -->
+		<h1 class="text-center">Timelapse Dashboard</h1>
+		<div class="row  justify-content-around align-items-center text-center">
+			<div class=" col-12 col-lg-6">
+				<button class="btn btn-dark text-center mt-3" onclick="logintoarlo()">Login</button>
+				<button class="generateShots btn btn-dark text-center mt-3" onclick="generateSnaps()">Generate
+					Snapshots</button>
+				<button class="generateShots btn btn-dark text-center mt-3" onclick="abortSnaps()">Abort
+					Snapshots</button>
+			</div>
+		</div>
+		<div class="row  justify-content-around align-items-center text-center py-3">
+			<div class=" col-12 col-lg-6">
+
+				<button class="generateShots btn btn-dark text-center mt-3" onclick="requestDayLapse()">1 Day</button>
+				<button class="generateShots btn btn-dark text-center mt-3" onclick="requestMonthLapse()">1
+					Month</button>
+				<button class="generateShots btn btn-dark text-center mt-3" onclick="requestYearLapse()">1 Year</button>
+			</div>
+		</div>
+
+
+		<div class="row  justify-content-around align-items-center text-center pb-3">
+			<div class="progress" style="width: 50%; margin: 50px;">
+				<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0"
+					aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+					<span class="progress-bar-label">0%</span>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="row  justify-content-around align-items-center text-center pb-3">
+			<div class=" col-12 col-lg-6">
+
+				<button class="btn btn-dark text-center mx-3" onclick="recentTimelapse()">Request
+					Videos</button>
+
+
+			</div>
+
+		</div>
+		<div class="row  justify-content-center align-items-center text-center pb-3">
+			<div class=" col-12 col-lg-6">
+
+
+				<button class="btn btn-light custom-btn text-center mt-3" onclick="toggleView()">Deletion
+					Code</button>
+
+				<button class="btn btn-light text-center  mt-3" onclick="deleteTimelapse()">Request
+					Deletion</button>
+
+			</div>
+
+		</div>
+
+
+
+		<div id="response">
+
+		</div>
+
+		<!-- <div class="row  justify-content-around align-items-center text-center">
+		<div class=" col-12 col-lg-6">
 	
-</div>
-	<script type="text/javascript">
+			<button class="btn btn-success text-center" onclick="myFunction()">Generate
+				TimeLapse</button>
+		</div>
+	</div> -->
+
+
+	</div>
+
+
+
+
+	<!-- <script type="text/javascript">
 		var vid = document.getElementById("timelapse");
 		function setPlaySpeedToTwo() { 
   			vid.playbackRate = 2;
@@ -62,12 +151,19 @@
 		function setPlaySpeedToNormal() { 
   			vid.playbackRate = 1;
 		} 
-	</script>
-<!-- js -->
-<script type="text/javascript" src="index7.js"></script>
-<!-- jquery popper bootstrap -->
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+	</script> -->
+	<!-- js -->
+	<script type="text/javascript" src="index7.js"></script>
+	<!-- jquery popper bootstrap -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+		crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+		integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+		crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+		integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+		crossorigin="anonymous"></script>
 </body>
+
 </html>
