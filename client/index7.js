@@ -11,31 +11,31 @@ async function postData(url = "", data = {}) {
 			// 'Content-Type': 'application/x-www-form-urlencoded',
 		},
 		body: JSON.stringify(data), // body data type must match "Content-Type" header
-	})
-	return await response.json() // parses JSON response into native JavaScript objects
+	});
+	return await response.json(); // parses JSON response into native JavaScript objects
 }
 
 async function abortSnaps() {
-	var i
+	var i;
 	for (i = 0; i <= 3; i++) {
 		await fetch("https://arlocam.herokuapp.com/snapstop").then(
 			(response) => {
 				// console.log(response);
 				response.json().then((data) => {
-					console.log(data)
-				})
+					console.log(data);
+				});
 			}
-		)
+		);
 	}
-	console.log("Done")
+	console.log("Done");
 }
 
 function toggleView() {
-	$(".deletionOptions").toggleClass("d-none")
+	$(".deletionOptions").toggleClass("d-none");
 }
 
 function deleteTimelapse() {
-	var json = prompt("Code")
+	var json = prompt("Code");
 	fetch("https://arlocam.herokuapp.com/del_timelapse", {
 		method: "post",
 		headers: {
@@ -45,33 +45,19 @@ function deleteTimelapse() {
 		body: json,
 	})
 		.then(function (data) {
-			console.log("Request succeeded with JSON response", data)
+			console.log("Request succeeded with JSON response", data);
 		})
 		.catch(function (error) {
-			console.log("Request failed", error)
-		})
+			console.log("Request failed", error);
+		});
 }
 
-function recentTimelapse() {
+function recentTimelapse(prop) {
 	fetch("https://arlocam.herokuapp.com/get_timelapse")
 		.then((response) => response.json())
 		.then((json) => {
-			var l = Object.values(json)
-			var x = Object.entries(json)
-			var videoCount = Object.keys(json).length
-			var findvalue = l.map(function (value) {
-				return value["datefrom"]
-			})
-			console.log(findvalue)
-			var findvalue2 = l.map(function (value) {
-				return value["dateto"]
-			})
-			console.log(findvalue2)
-
-			for (i = 0; i < findvalue.length; i++) {
-				if (findvalue[i]) {
-				}
-			}
+			console.log(json);
+			$(".video").siblings().remove();
 
 			// var test = JSON.stringify(json);
 			// console.log(test[0])
@@ -79,51 +65,33 @@ function recentTimelapse() {
 			// </video>
 			// console.log(l);
 
-			var output = '<h2 class="text-center">Lists of videos</h2>'
-			output +=
-				'<div class="row text-center" style="display:flex; flex-wrap:wrap;">'
-			for (var i = 0; i < l.length; i++) {
-				var allTitles = []
-				allTitles = JSON.stringify(l[i].title)
-				var titleSpecific =
-					"{" + '"video' + i + '"' + ':{"title":' + allTitles + "}}"
-				var m = []
-				m[i] = l[i].url
-				// var zz = l[i];
-				// console.log(zz);
+			$.each(json, function (k, v) {
+				console.log(v.title);
+				const dateFrom = moment(v.datefrom, "DDMMYYYY");
+				console.log(dateFrom);
+				const dateTo = moment(v.dateto, "DDMMYYYY");
+				console.log(dateTo);
+				var diff = dateTo.diff(dateFrom, prop);
+				if (diff == 1) {
+					$(".video")
+						.clone()
+						.appendTo(".gallery")
+						.addClass(k)
+						.removeClass("video")
+						.css("display", "block");
+					$(`.${k} .videoTitle`).text(v.title);
+					$(`.${k} .videoDateFrom`).append(
+						`<b>Date From</b>: ${dateFrom.format("DD/MM/YYYY")}`
+					);
+					$(`.${k} .videoDateTo`).append(
+						`<b>Date To</b>: ${dateTo.format("DD/MM/YYYY")}`
+					);
+					var video = $(`.${k}`).find("video")[0];
+					video.src = v.url;
+					video.load();
+				}
+			});
 
-				//  console.log(m.slice(-1)[0]);
-				// console.log(l[i].title)
-				// console.log(m);
-
-				// output += `
-
-				//     <video src="${m[i]}">
-				//     </video>
-
-				//                 `;
-				output += `
-
-            
-    <div class="col-md-3 col-sm-6 py-5">
-      <hr>
-      <h4>${l[i].datefrom} to ${l[i].dateto}</h4>
-      <hr>
-			<video src="${m[i]}" id="timelapse" class="border img-fluid" controls style="background:black">
-      </video> 
-      <p style="font-size: 1em;font-weight: 500" class="deletionOptions">${titleSpecific}</p>
-			<!-- <button onclick="setPlaySpeedToNormal()" type="button" class="btn btn-success text-center">Default</button>
-			<button onclick="setPlaySpeedToTwo()" type="button" class="btn btn-success text-center mx-3">2x</button>
-			<button onclick="setPlaySpeedToThree()" type="button" class="btn btn-success text-center">3x</button><br> -->
-		</div>
-	
-                            
-                        `
-			}
-
-			output += "</div>"
-			// console.log(output)
-			document.getElementById("response").innerHTML = output
 			//       <h2>Lists of videos</h2><ul>
 			//         <li>
 			//           https://s3.eu-west-2.amazonaws.com/arlocam-timelapse/timelapse-2020-05-12%2008%3A55%3A02%2B01%3A00.avi?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJIOPZACTSKHZXTVA%2F20200513%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20200513T110656Z&X-Amz-Expires=604000&X-Amz-SignedHeaders=host&X-Amz-Signature=35c6b827dea72351a1f46a724bca8ce0974d78511aa699df68373e505c276a5f
@@ -153,7 +121,7 @@ function recentTimelapse() {
 			//     https://s3.eu-west-2.amazonaws.com/arlocam-timelapse/timelapse-2020-05-12%2015%3A27%3A47%2B01%3A00.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJIOPZACTSKHZXTVA%2F20200513%2Feu-west-2%2Fs3%2Faws4_request&X-Amz-Date=20200513T112453Z&X-Amz-Expires=604000&X-Amz-SignedHeaders=host&X-Amz-Signature=c303d4318c3d84db8af6f45ef97d00bda48915852b9195482ce4dc2cc6fef82e
 			//                       </li>
 			// </ul>
-		})
+		});
 }
 
 // var p = {
@@ -197,23 +165,23 @@ function recentTimelapse() {
 // }
 
 function generateSnaps() {
-	var seconds = prompt("Please enter the snapshot interval")
+	var seconds = prompt("Please enter the snapshot interval");
 	fetch("https://arlocam.herokuapp.com/snapshot?x=" + seconds).then(
 		(data) => {
-			document.querySelector(".generateShots").innerHTML = "OK!"
+			document.querySelector(".generateShots").innerHTML = "OK!";
 		}
-	)
+	);
 }
 
 async function logintoarlo() {
-	var email = prompt("Please enter your email")
-	var password = prompt("Please enter your password")
+	var email = prompt("Please enter your email");
+	var password = prompt("Please enter your password");
 	await postData("https://arlocam.herokuapp.com/login", {
 		email: email,
 		password: password,
 	}).then((data) => {
-		console.log(data)
-	})
+		console.log(data);
+	});
 }
 
 // async function requestLapse() {
@@ -226,56 +194,19 @@ async function logintoarlo() {
 //   });
 //   location.reload();
 // }
-async function requestMonthLapse() {
-	let m = moment()
+async function requestLapse(prop) {
+	let m = moment();
 	// var month = `${moment().subtract(1, 'months')}`;
 	// console.log(month)
 	// console.log(`${m.toISOString()}`)
-	var dateTo = m.add(1, "days").format("DDMMYYYY")
-	var month = m.subtract(1, "months").subtract(1, "days")
-	var dateFrom = month.format("DDMMYYYY")
+	var dateTo = m.add(1, "days").format("DDMMYYYY");
+	var dateFrom = m.subtract(1, prop).subtract(1, "days").format("DDMMYYYY");
 	await postData("https://arlocam.herokuapp.com/timelapse", {
 		datefrom: dateFrom,
 		dateto: dateTo,
 	}).then((data) => {
 		// document.querySelector('.requestLapse').innerHTML = "OK!"
-		console.log(data)
-	})
-	location.reload()
-}
-
-async function requestDayLapse() {
-	let m = moment()
-	// var month = `${moment().subtract(1, 'months')}`;
-	// console.log(month)
-	// console.log(`${m.toISOString()}`)
-	var dateTo = m.format("DDMMYYYY")
-	var day = m.subtract(1, "days")
-	var dateFrom = day.format("DDMMYYYY")
-	await postData("https://arlocam.herokuapp.com/timelapse", {
-		datefrom: dateFrom,
-		dateto: dateTo,
-	}).then((data) => {
-		// document.querySelector('.requestLapse').innerHTML = "OK!"
-		console.log(data)
-	})
-	location.reload()
-}
-
-async function requestYearLapse() {
-	let m = moment()
-	// var month = `${moment().subtract(1, 'months')}`;
-	// console.log(month)
-	// console.log(`${m.toISOString()}`)
-	var dateTo = m.add(1, "days").format("DDMMYYYY")
-	var year = m.subtract(1, "years").subtract(1, "days")
-	var dateFrom = year.format("DDMMYYYY")
-	await postData("https://arlocam.herokuapp.com/timelapse", {
-		datefrom: dateFrom,
-		dateto: dateTo,
-	}).then((data) => {
-		// document.querySelector('.requestLapse').innerHTML = "OK!"
-		console.log(data)
-	})
-	location.reload()
+		console.log(data);
+	});
+	location.reload();
 }

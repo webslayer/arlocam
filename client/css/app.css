@@ -2,22 +2,31 @@ body {
 	background: gray;
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 10px;
+#videos p {
+	margin-left: 5px;
+	text-align: left;
+	margin-bottom: 1px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 300px;
+}
+
+width ::-webkit-scrollbar {
+	width: 10px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+	background: #f1f1f1;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #888; 
+	background: #888;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; 
+	background: #555;
 }
