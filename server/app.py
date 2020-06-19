@@ -7,7 +7,7 @@ import boto3
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from crochet import run_in_reactor, setup
-from flask import Flask, Response, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for
 from flask_cors import CORS
 from markupsafe import escape
 from pymongo import MongoClient
@@ -165,17 +165,10 @@ def del_timelapse():
 
 @app.route("/timelapse_progress")
 def timelapse_progress():
-    def generate():
-        doc = db.progress.find_one()
-        x = doc["x"] if doc and doc["started"] else 0
+    doc = db.progress.find_one()
+    x = doc["x"] if doc and doc["started"] else 0
 
-        while x <= 100:
-            doc = db.progress.find_one()
-            x = doc["x"] if doc and doc["started"] else 0
-            yield f"data:{x:.2f}\n\n"
-            time.sleep(10)
-
-    return Response(generate(), mimetype="text/event-stream")
+    return x
 
 
 @app.route("/start_stream")
