@@ -168,7 +168,7 @@ def timelapse_progress():
     doc = db.progress.find_one()
     x = doc["x"] if doc and doc["started"] else 0
 
-    return x
+    return str(x)
 
 
 @app.route("/start_stream")
