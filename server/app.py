@@ -1,38 +1,27 @@
-import datetime
 import json
 import os
-import time
+import signal
+import subprocess
 
 import boto3
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
-from crochet import run_in_reactor, setup
-from flask import Flask, redirect, render_template, request, url_for
-from flask_cors import CORS
-from markupsafe import escape
-from pymongo import MongoClient
-from rq import Queue
-from twisted.internet import reactor, task
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
-from arlo_wrap import ArloWrap
-from storage import create_presigned_url, delete_file
-from timelapse import create_timelapse
-from worker import conn
+from .arlo_wrap import ArloWrap
+from .models import Auth, DateRange
+from .storage import delete_file
+from .timelapse import create_timelapse
+from .db import db
 
-setup()
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-client = MongoClient(mongo_uri)
-db = client.arlocam
+origins = ["*"]
 
-q1 = Queue(connection=conn)
-
-scheduler = BackgroundScheduler()
+app.add_middleware(CORSMiddleware, allow_origins=origins)
 
 
-@app.route("/")
+@app.get("/")
 def index():
     doc = db.record.find_one()
     if doc:
@@ -40,94 +29,79 @@ def index():
     return "You are not logged in"
 
 
-@app.route("/login", methods=["POST"])
-def login():
-    data = request.data
-    data = json.loads(data)
+@app.post("/login")
+def login(auth: Auth):
     db.record.update_one(
         {"_id": 1},
-        {"$set": {"username": data["email"], "password": data["password"]}},
+        {"$set": {"username": auth["email"], "password": auth["password"]}},
         upsert=True,
     )
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
-@app.route("/logout")
+@app.get("/logout")
 def logout():
     # remove the username from the session if it's there
     db.record.delete_one({})
-    return redirect(url_for("index"))
+    return RedirectResponse("/")
 
 
-@app.route("/snapshot")
-def snapshot():
-    seconds = request.args.get("x")
-    doc = db.record.find_one()
-    username = doc["username"]
-    password = doc["password"]
-    arlo = ArloWrap(username, password)
-    db.snapjobs.update_one(
-        {"_id": 1}, {"$set": {"started": True, "x": seconds}}, upsert=True
+def kill_proc():
+    doc = db.snapjobs.find_one()
+
+    if pid := doc["pid"]:
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGTERM)
+
+        except ProcessLookupError:
+            pass
+
+
+@app.get("/snapshot")
+def snapshot(x: int = 300):
+
+    kill_proc()
+
+    db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
+
+    proc = subprocess.Popen(
+        "python scheduler.py", stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid,
     )
 
-    q1.empty()
+    db.snapjobs.update_one({"_id": 1}, {"$set": {"pid": proc.pid}}, upsert=True)
 
-    m, s = divmod(int(seconds), 60)
-    h, m = divmod(m, 60)
-
-    scheduler.remove_all_jobs()
-    scheduler.add_job(
-        q1.enqueue,
-        args=[arlo.take_snapshot],
-        trigger="interval",
-        hours=h,
-        minutes=m,
-        seconds=s,
-        next_run_time=datetime.datetime.now(),
-    )
-
-    if scheduler.running:
-        return "scheduler already running, stop that first", 400
-    else:
-        scheduler.start()
-
-    for job in scheduler.get_jobs():
-        print(
-            "name: %s, trigger: %s, next run: %s, handler: %s"
-            % (job.name, job.trigger, job.next_run_time, job.func)
-        )
-    return "successfully started", 200
+    return "successfully started"
 
 
-@app.route("/snapstop")
+@app.get("/snapstop")
 def snapstop():
-    scheduler.remove_all_jobs()
-    q1.empty()
+
+    kill_proc()
+
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
-    return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
+    return "successfully stopped"
 
 
-@run_in_reactor
+@app.on_event("startup")
 def onstartup():
-    def task():
-        doc = db.snapjobs.find_one()
-        if doc and doc["started"]:
-            with app.test_request_context(f"/snapshot?x={doc['x']}"):
-                snapshot()
-
-    reactor.callLater(5, task)
+    doc = db.snapjobs.find_one()
+    if doc and doc["started"]:
+        snapshot(doc["x"])
 
 
-@app.route("/timelapse", methods=["POST"])
-def timelapse():
-    data = request.data
-    data = json.loads(data)
+@app.on_event("shutdown")
+def shutdown_event():
+    kill_proc()
+
+
+@app.post("/timelapse")
+def timelapse(daterange: DateRange):
     db.progress.update_one({"_id": 1}, {"$set": {"started": True, "x": 0}}, upsert=True)
-    create_timelapse(data["datefrom"], data["dateto"])
+    create_timelapse(daterange["datefrom"], daterange["dateto"])
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
-@app.route("/get_timelapse")
+@app.get("/get_timelapse")
 def get_timelapse():
     links = dict()
     s3_client = boto3.client(
@@ -152,9 +126,8 @@ def get_timelapse():
     return json.dumps(links), 200, {"ContentType": "application/json"}
 
 
-@app.route("/del_timelapse", methods=["POST"])
-def del_timelapse():
-    data = request.data
+@app.post("/del_timelapse")
+def del_timelapse(data):
     data = json.loads(data)
     for video in data:
         file_name = data[video]["title"]
@@ -163,7 +136,7 @@ def del_timelapse():
     return json.dumps({"success": True}), 200, {"ContentType": "application/json"}
 
 
-@app.route("/timelapse_progress")
+@app.get("/timelapse_progress")
 def timelapse_progress():
     doc = db.progress.find_one()
     x = doc["x"] if doc and doc["started"] else 0
@@ -171,17 +144,8 @@ def timelapse_progress():
     return str(x)
 
 
-@app.route("/start_stream")
+@app.get("/start_stream")
 def start_stream():
-    doc = db.record.find_one()
-    print(doc)
-    username = doc["username"]
-    password = doc["password"]
-    arlo = ArloWrap(username, password)
+    arlo = ArloWrap()
 
     return arlo.start_stream()
-
-
-if __name__ == "__main__":
-    onstartup()
-    app.run(debug=True)

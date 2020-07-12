@@ -5,17 +5,11 @@ import time
 import botocore
 import cv2
 import pytz
-from crochet import run_in_reactor
-from pymongo import MongoClient
 
-from storage import download_file, upload_file
-
-mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-client = MongoClient(mongo_uri)
-db = client.arlocam
+from .storage import download_file, upload_file
+from .db import db
 
 
-@run_in_reactor
 def create_timelapse(datefrom, dateto):
     start = time.time()
     timezone = pytz.timezone("Europe/London")

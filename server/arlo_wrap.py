@@ -1,12 +1,12 @@
 import os
 import time
-from datetime import date, datetime, timedelta
+from datetime import datetime
 
 import pytz
-from arlo import Arlo
 from pymongo import MongoClient
 
-from storage import upload_image_file
+from arlo import Arlo
+from .storage import upload_image_file
 
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 client = MongoClient(mongo_uri)
@@ -17,10 +17,11 @@ collection = db.snapshots
 class ArloWrap:
     """docstring for ArloWrap"""
 
-    def __init__(self, USERNAME, PASSWORD):
+    def __init__(self):
         super(ArloWrap, self).__init__()
-        self.USERNAME = USERNAME
-        self.PASSWORD = PASSWORD
+        doc = db.record.find_one()
+        self.USERNAME = doc["username"]
+        self.PASSWORD = doc["password"]
         self.arlo = Arlo(self.USERNAME, self.PASSWORD)
 
         # Get the list of devices and filter on device type to only get the basestation.
@@ -53,7 +54,7 @@ class ArloWrap:
 
                 print("uploaded shot")
             else:
-                print("skipped")
+                print("skipped, url not found")
 
             print(time.time() - start)
 

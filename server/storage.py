@@ -1,7 +1,5 @@
 import logging
-import os
-from io import BytesIO, StringIO
-from urllib.request import urlopen
+from io import BytesIO
 
 import boto3
 import requests
@@ -47,7 +45,7 @@ def upload_file(file_name, bucket, object_name=None):
     # Upload the file
     s3_client = boto3.client("s3")
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name)
+        _ = s3_client.upload_file(file_name, bucket, object_name)
     except ClientError as e:
         logging.error(e)
         return False
@@ -66,7 +64,7 @@ def delete_file(bucket, object_name=None):
     # Upload the file
     s3_client = boto3.client("s3")
     try:
-        response = s3_client.delete_object(Bucket=bucket, Key=object_name)
+        _ = s3_client.delete_object(Bucket=bucket, Key=object_name)
     except ClientError as e:
         logging.error(e)
         return False
