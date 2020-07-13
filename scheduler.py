@@ -1,5 +1,5 @@
-import signal
 import os
+import signal
 from datetime import datetime
 
 from apscheduler.schedulers.blocking import BlockingScheduler

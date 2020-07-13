@@ -3,25 +3,18 @@ import time
 from datetime import datetime
 
 import pytz
-from pymongo import MongoClient
 
 from arlo import Arlo
-from .storage import upload_image_file
 
-mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
-client = MongoClient(mongo_uri)
-db = client.arlocam
-collection = db.snapshots
+from .db import db
+from .sftp import SFTP
 
 
 class ArloWrap:
-    """docstring for ArloWrap"""
-
     def __init__(self):
         super(ArloWrap, self).__init__()
-        doc = db.record.find_one()
-        self.USERNAME = doc["username"]
-        self.PASSWORD = doc["password"]
+        self.USERNAME = os.getenv("ARLO_USER")
+        self.PASSWORD = os.getenv("ARLO_PASS")
         self.arlo = Arlo(self.USERNAME, self.PASSWORD)
 
         # Get the list of devices and filter on device type to only get the basestation.
@@ -44,13 +37,14 @@ class ArloWrap:
                 now = datetime.now(timezone).replace(microsecond=0)
                 fname = f"snapshot-{now.isoformat()}.jpg"
 
-                result = collection.insert_one(
+                result = db.snapshots.insert_one(
                     {"file_name": fname, "created_date": now}
                 )
 
                 print(f"Data inserted with record ids: {result.inserted_id}")
 
-                upload_image_file(url, "arlocam-snapshots", fname)
+                with SFTP as sftp:
+                    _ = sftp.upload_snaphot(url, fname)
 
                 print("uploaded shot")
             else:
