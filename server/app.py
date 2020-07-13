@@ -85,7 +85,7 @@ def get_timelapse():
     links = dict()
 
     for i, doc in enumerate(db.timelapse.find()):
-        url = SFTP.remote_timelapse_path
+        url = "https://silverene/wp-content/uploads/timelapse/" + doc["file_name"]
         links[f"video{i}"] = {
             "title": doc["file_name"],
             "url": url,
