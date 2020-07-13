@@ -1,2 +1,2 @@
-web: cd server && gunicorn app:app --timeout 0
-worker: cd server && python worker.py
+web: gunicorn -w 3 -k uvicorn.workers.UvicornWorker server.app:app
+worker: python -m server.worker
