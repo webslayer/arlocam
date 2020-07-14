@@ -20,22 +20,12 @@ class SFTP:
     remote_snaphot_path = "/silverene/wp-content/uploads/snapshots/"
     remote_timelapse_path = "/silverene/wp-content/uploads/timelapse/"
 
-    def __enter__(self):
+    def __init__(self):
         self.transport = paramiko.Transport((self.host, self.port))
         self.transport.connect(None, self.username, self.password)
         self.sftp = paramiko.SFTPClient.from_transport(self.transport)
 
-    def __exit__(self):
-        """close all connections"""
-
-        # Close
-        if self.sftp:
-            self.sftp.close()
-        if self.transport:
-            self.transport.close()
-
-    @classmethod
-    def upload_snaphot(cls, url, filename):
+    def upload_snaphot(self, url, filename):
         """upload snapshot from url with compression
 
         Args:
@@ -58,6 +48,6 @@ class SFTP:
         print("compressed")
 
         # Do the actual upload
-        file_attr = cls.sftp.putfo(buffer, cls.remote_snaphot_path + filename)
+        file_attr = self.sftp.putfo(buffer, self.remote_snaphot_path + filename)
 
         return file_attr

@@ -43,8 +43,8 @@ class ArloWrap:
 
                 print(f"Data inserted with record ids: {result.inserted_id}")
 
-                with SFTP as sftp:
-                    _ = sftp.upload_snaphot(url, fname)
+                sftp = SFTP()
+                sftp.upload_snaphot(url, fname)
 
                 print("uploaded shot")
             else:
