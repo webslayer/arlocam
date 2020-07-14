@@ -24,12 +24,14 @@ def timeout(secs):
     return wrap
 
 
-@timeout(10)
-def bar(r):
-    for i in range(r):
-        print("Tick")
-        time.sleep(1)
+class Bar:
+    @timeout(10)
+    def bar(self, r):
+        for i in range(r):
+            print("Tick")
+            time.sleep(1)
 
 
 if __name__ == "__main__":
-    bar(100)
+    b = Bar()
+    b.bar(100)
