@@ -18,6 +18,7 @@ dnspython==1.16.0
 docutils==0.15.2
 fastapi==0.58.1
 flake8==3.8.3
+func-timeout==4.3.5
 future==0.18.2
 gevent==20.6.2
 greenlet==0.4.16

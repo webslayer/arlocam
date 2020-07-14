@@ -1,6 +1,7 @@
 import os
 import time
 from datetime import datetime
+from func_timeout import func_timeout, FunctionTimedOut
 
 import pytz
 
@@ -54,6 +55,13 @@ class ArloWrap:
 
         except Exception as e:
             print(e)
+
+    def snap_timeout(self):
+        try:
+            func_timeout(30, self.take_snapshot)
+
+        except FunctionTimedOut:
+            print("timed out")
 
     def start_stream(self):
         try:

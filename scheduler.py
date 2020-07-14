@@ -27,7 +27,7 @@ if __name__ == "__main__":
     scheduler = BlockingScheduler()
     scheduler.add_job(
         queue.enqueue,
-        args=[arlo.take_snapshot],
+        args=[arlo.snap_timeout],
         trigger="interval",
         hours=h,
         minutes=m,
