@@ -105,11 +105,11 @@ def get_timelapse():
 
 @app.get("/del_timelapse")
 def del_timelapse():
-    with SFTP as sftp:
-        files = sftp.listdir(path=sftp.remote_timelapse_path)
-        for file_name in files:
-            sftp.remove(sftp.remote_timelapse_path + file_name)
-            db.timelapse.delete_one({"file_name": file_name})
+    sftp = SFTP()
+    files = sftp.listdir(path=sftp.remote_timelapse_path)
+    for file_name in files:
+        sftp.remove(sftp.remote_timelapse_path + file_name)
+        db.timelapse.delete_one({"file_name": file_name})
     return "deleted all timelapse"
 
 
