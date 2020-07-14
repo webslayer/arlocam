@@ -77,7 +77,7 @@ def shutdown_event():
 
 
 @app.post("/timelapse")
-def timelapse(daterange: DateRange, background_tasks: BackgroundTasks):
+async def timelapse(daterange: DateRange, background_tasks: BackgroundTasks):
     db.progress.update_one({"_id": 1}, {"$set": {"started": True, "x": 0}}, upsert=True)
     background_tasks.add_task(
         create_timelapse, daterange["datefrom"], daterange["dateto"]
