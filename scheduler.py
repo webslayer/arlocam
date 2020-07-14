@@ -7,10 +7,12 @@ from rq import Queue
 
 from server.db import db
 from server.worker import conn
-from server.timeout import snap_timeout
 
+from server.arlo_wrap import ArloWrap
 
 if __name__ == "__main__":
+
+    arlo = ArloWrap()
 
     doc = db.snapjobs.find_one()
 
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     scheduler = BlockingScheduler()
     scheduler.add_job(
         queue.enqueue,
-        args=[snap_timeout],
+        args=[arlo.take_snapshot],
         trigger="interval",
         hours=h,
         minutes=m,
