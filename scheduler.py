@@ -5,11 +5,13 @@ from datetime import datetime
 from apscheduler.schedulers.blocking import BlockingScheduler
 from rq import Queue
 
-from server.arlo_wrap import ArloWrap
 from server.db import db
 from server.worker import conn
+from server.timeout import snap_timeout
+
 
 if __name__ == "__main__":
+
     doc = db.snapjobs.find_one()
 
     queue = Queue(connection=conn)
@@ -20,12 +22,10 @@ if __name__ == "__main__":
     m, s = divmod(x, 60)
     h, m = divmod(m, 60)
 
-    arlo = ArloWrap()
-
     scheduler = BlockingScheduler()
     scheduler.add_job(
         queue.enqueue,
-        args=[arlo.take_snapshot],
+        args=[snap_timeout],
         trigger="interval",
         hours=h,
         minutes=m,

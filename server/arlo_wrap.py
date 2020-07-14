@@ -8,29 +8,6 @@ from arlo import Arlo
 
 from .db import db
 from .sftp import SFTP
-import multiprocessing
-
-
-def timeout(secs):
-    def wrap(f):
-        def wrapped_f(*args):
-            p = multiprocessing.Process(target=f, args=(args))
-            p.start()
-
-            # Wait for 10 seconds or until process finishes
-            p.join(secs)
-
-            # If thread is still active
-            if p.is_alive():
-                print("running... let's kill it...")
-
-                # Terminate
-                p.terminate()
-                p.join()
-
-        return wrapped_f
-
-    return wrap
 
 
 class ArloWrap:

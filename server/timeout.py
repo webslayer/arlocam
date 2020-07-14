@@ -1,37 +1,20 @@
 import multiprocessing
-import time
+
+from .arlo_wrap import ArloWrap
 
 
-def timeout(secs):
-    def wrap(f):
-        def wrapped_f(*args):
-            p = multiprocessing.Process(target=f, args=(args))
-            p.start()
+def snap_timeout():
+    arlo = ArloWrap()
+    p = multiprocessing.Process(target=arlo.take_snapshot)
+    p.start()
 
-            # Wait for 10 seconds or until process finishes
-            p.join(secs)
+    # Wait for 10 seconds or until process finishes
+    p.join(60)
 
-            # If thread is still active
-            if p.is_alive():
-                print("running... let's kill it...")
+    # If thread is still active
+    if p.is_alive():
+        print("running... let's kill it...")
 
-                # Terminate
-                p.terminate()
-                p.join()
-
-        return wrapped_f
-
-    return wrap
-
-
-class Bar:
-    @timeout(10)
-    def bar(self, r):
-        for i in range(r):
-            print("Tick")
-            time.sleep(1)
-
-
-if __name__ == "__main__":
-    b = Bar()
-    b.bar(100)
+        # Terminate
+        p.terminate()
+        p.join()
