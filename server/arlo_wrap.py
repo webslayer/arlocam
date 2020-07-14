@@ -8,6 +8,7 @@ from arlo import Arlo
 
 from .db import db
 from .sftp import SFTP
+from .timeout import timeout
 
 
 class ArloWrap:
@@ -25,6 +26,7 @@ class ArloWrap:
         # This will return an array of cameras, including all of the cameras' associated metadata.
         self.camera = self.arlo.GetDevices("camera")[1]
 
+    @timeout(70)
     def take_snapshot(self):
         try:
             start = time.time()
