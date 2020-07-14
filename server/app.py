@@ -27,12 +27,16 @@ def index():
 def kill_proc():
     doc = db.snapjobs.find_one()
 
-    if pid := doc["pid"]:
-        try:
-            os.killpg(os.getpgid(pid), signal.SIGTERM)
+    try:
 
-        except ProcessLookupError:
-            pass
+        if pid := doc["pid"]:
+            try:
+                os.killpg(os.getpgid(pid), signal.SIGTERM)
+
+            except ProcessLookupError:
+                pass
+    except KeyError:
+        pass
 
 
 @app.get("/snapshot")
