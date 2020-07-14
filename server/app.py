@@ -88,8 +88,9 @@ def get_timelapse():
     links = dict()
 
     for i, doc in enumerate(db.timelapse.find()):
-        url = "https://silverene/wp-content/uploads/timelapse/" + urllib.parse.quote(
-            doc["file_name"]
+        url = (
+            "https://silverene.info/wp-content/uploads/timelapse/"
+            + urllib.parse.quote(doc["file_name"])
         )
         links[f"video{i}"] = {
             "title": doc["file_name"],
