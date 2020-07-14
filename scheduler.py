@@ -1,3 +1,4 @@
+#! /home/vignesh/anaconda3/envs/arlocam/bin/python
 import os
 import signal
 from datetime import datetime
@@ -11,6 +12,10 @@ from server.worker import conn
 from server.arlo_wrap import ArloWrap
 
 if __name__ == "__main__":
+
+    pid = os.getpid()
+
+    db.schedulers.insert_one({"pid": pid})
 
     arlo = ArloWrap()
 

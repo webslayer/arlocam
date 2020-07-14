@@ -1,9 +1,9 @@
 import os
 import time
 from datetime import datetime
-from func_timeout import func_timeout, FunctionTimedOut
 
 import pytz
+from func_timeout import FunctionTimedOut, func_timeout
 
 from arlo import Arlo
 

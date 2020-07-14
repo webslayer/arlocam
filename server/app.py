@@ -25,18 +25,14 @@ def index():
 
 
 def kill_proc():
-    doc = db.snapjobs.find_one()
 
-    try:
-
+    for doc in enumerate(db.schedulers.find()):
         if pid := doc["pid"]:
             try:
                 os.killpg(os.getpgid(pid), signal.SIGTERM)
 
             except ProcessLookupError:
                 pass
-    except KeyError:
-        pass
 
 
 @app.get("/snapshot")
@@ -46,11 +42,9 @@ def snapshot(x: int = 300):
 
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": True, "x": x}}, upsert=True)
 
-    proc = subprocess.Popen(
+    subprocess.Popen(
         "python scheduler.py", stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid,
     )
-
-    db.snapjobs.update_one({"_id": 1}, {"$set": {"pid": proc.pid}}, upsert=True)
 
     return "successfully started"
 
@@ -105,9 +99,9 @@ def get_timelapse():
 @app.get("/del_timelapse")
 def del_timelapse():
     sftp = SFTP()
-    files = sftp.listdir(path=sftp.remote_timelapse_path)
+    files = sftp.sftp.listdir(path=sftp.remote_timelapse_path)
     for file_name in files:
-        sftp.remove(sftp.remote_timelapse_path + file_name)
+        sftp.sftp.remove(sftp.remote_timelapse_path + file_name)
         db.timelapse.delete_one({"file_name": file_name})
     return "deleted all timelapse"
 
