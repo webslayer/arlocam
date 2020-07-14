@@ -26,13 +26,15 @@ def index():
 
 def kill_proc():
 
-    for doc in enumerate(db.schedulers.find()):
+    for doc in db.schedulers.find():
         if pid := doc["pid"]:
             try:
                 os.killpg(os.getpgid(pid), signal.SIGTERM)
 
             except ProcessLookupError:
                 pass
+
+    db.schedulers.remove({})
 
 
 @app.get("/snapshot")
