@@ -1,8 +1,9 @@
 import os
 import signal
 import subprocess
+import urllib
 
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
 from .arlo_wrap import ArloWrap
@@ -85,7 +86,9 @@ def get_timelapse():
     links = dict()
 
     for i, doc in enumerate(db.timelapse.find()):
-        url = "https://silverene/wp-content/uploads/timelapse/" + doc["file_name"]
+        url = "https://silverene/wp-content/uploads/timelapse/" + urllib.parse.quote(
+            doc["file_name"]
+        )
         links[f"video{i}"] = {
             "title": doc["file_name"],
             "url": url,
@@ -106,12 +109,13 @@ def del_timelapse():
     return "deleted all timelapse"
 
 
-@app.get("/timelapse_progress")
-def timelapse_progress():
-    doc = db.progress.find_one()
-    x = doc["x"] if doc and doc["started"] else 0
-
-    return str(x)
+@app.websocket("/timelapse_progress")
+async def timelapse_progress(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        doc = db.progress.find_one()
+        x = doc["x"] if doc and doc["started"] else 0
+        await websocket.send_text(str(x))
 
 
 @app.get("/start_stream")
