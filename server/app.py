@@ -34,7 +34,7 @@ def kill_proc():
             except ProcessLookupError:
                 pass
 
-    db.schedulers.remove({})
+        db.schedulers.remove(doc)
 
 
 @app.get("/snapshot")
