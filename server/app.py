@@ -131,7 +131,7 @@ async def timelapse_progress():
     doc = db.progress.find_one()
     x = doc["x"] if doc and doc["started"] else 0
 
-    return str(x)
+    return x
     # StreamingResponse(stream_progress(), media_type="text/event-stream")
 
 
