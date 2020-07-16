@@ -1,8 +1,9 @@
 import os
+import secrets
 import shutil
 import time
 from datetime import datetime
-import secrets
+
 import cv2
 import pytz
 

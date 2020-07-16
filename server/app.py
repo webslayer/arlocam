@@ -61,8 +61,8 @@ def snapstop():
     return "successfully stopped"
 
 
-@app.on_event("startup")
-def onstartup():
+@app.get("/resume")
+def resume():
     doc = db.snapjobs.find_one()
     if doc and doc["started"]:
         snapshot(doc["x"])
