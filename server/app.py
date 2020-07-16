@@ -67,6 +67,8 @@ def resume():
     if doc and doc["started"]:
         snapshot(doc["x"])
 
+    return "resumed"
+
 
 @app.on_event("shutdown")
 def shutdown_event():
