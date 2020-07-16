@@ -1,4 +1,3 @@
-#! /home/vignesh/anaconda3/envs/arlocam/bin/python
 import os
 import signal
 from datetime import datetime

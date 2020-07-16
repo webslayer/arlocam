@@ -1,7 +1,8 @@
 import os
+import shutil
 import time
 from datetime import datetime
-
+import secrets
 import cv2
 import pytz
 
@@ -12,15 +13,20 @@ from .sftp import SFTP
 def create_timelapse(datefrom, dateto):
     sftp = SFTP()
     start = time.time()
-    timezone = pytz.timezone("Europe/London")
 
+    timezone = pytz.timezone("Europe/London")
     now = datetime.now(timezone).replace(microsecond=0)
     fname = f"timelapse-{now}.mp4"
 
+    folder = secrets.token_hex(16)
+    os.makedirs(f"/tmp/{folder}", exist_ok=True)
+
     datefrom = datetime.strptime(datefrom, "%d%m%Y")
     dateto = datetime.strptime(dateto, "%d%m%Y")
+
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    video = cv2.VideoWriter(f"/tmp/{fname}", fourcc, 24, (1904, 1072))
+    video = cv2.VideoWriter(f"/tmp/{folder}/{fname}", fourcc, 24, (1904, 1072))
+
     count = db.snapshots.find(
         {"created_date": {"$gte": datefrom, "$lt": dateto}}
     ).count()
@@ -29,7 +35,7 @@ def create_timelapse(datefrom, dateto):
         db.snapshots.find({"created_date": {"$gte": datefrom, "$lt": dateto}})
     ):
         image_fname = shot["file_name"]
-        image_fpath = f"/tmp/{image_fname}"
+        image_fpath = f"/tmp/{folder}/{image_fname}"
 
         try:
 
@@ -46,12 +52,18 @@ def create_timelapse(datefrom, dateto):
 
     video.release()
     print("done")
-    os.system(f"ffmpeg -y -i '/tmp/{fname}' -vcodec libx264 '/tmp/compressed.mp4'")
-    os.remove(f"/tmp/{fname}")
-    os.rename("/tmp/compressed.mp4", f"/tmp/{fname}")
-    sftp.sftp.put(f"/tmp/{fname}", sftp.remote_timelapse_path + fname)
-    os.remove(f"/tmp/{fname}")
+
+    # compress file
+    os.system(
+        f"ffmpeg -y -i '/tmp/{folder}/{fname}' -vcodec libx264 '/tmp/{folder}/compressed.mp4'"
+    )
+
+    # upload
+    sftp.sftp.put(f"/tmp/{folder}/compressed.mp4", sftp.remote_timelapse_path + fname)
     print("uploaded")
+
+    # cleanup
+    shutil.rmtree(f"/tmp/{folder}")
 
     result = db.timelapse.insert_one(
         {
@@ -61,8 +73,9 @@ def create_timelapse(datefrom, dateto):
             "dateto": dateto,
         }
     )
-
     print(f"Data inserted with record ids: {result.inserted_id}")
+
     prog = 100.0
     db.progress.update_one({"_id": 1}, {"$set": {"x": prog}})
+
     print(time.time() - start)

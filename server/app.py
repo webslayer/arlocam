@@ -5,6 +5,7 @@ import urllib
 
 from fastapi import BackgroundTasks, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from .arlo_wrap import ArloWrap
 from .db import db
@@ -109,12 +110,29 @@ def del_timelapse():
 
 
 @app.websocket("/timelapse_progress")
-async def timelapse_progress(websocket: WebSocket):
+async def timelapse_progress_websocket(websocket: WebSocket):
     await websocket.accept()
     while True:
+        _ = await websocket.receive_text()
         doc = db.progress.find_one()
         x = doc["x"] if doc and doc["started"] else 0
         await websocket.send_text(str(x))
+
+
+async def stream_progress():
+    while True:
+        doc = db.progress.find_one()
+        x = doc["x"] if doc and doc["started"] else 0
+        yield f"data: {x}\n\n"
+
+
+@app.get("/timelapse_progress")
+async def timelapse_progress():
+    doc = db.progress.find_one()
+    x = doc["x"] if doc and doc["started"] else 0
+
+    return str(x)
+    # StreamingResponse(stream_progress(), media_type="text/event-stream")
 
 
 @app.get("/start_stream")

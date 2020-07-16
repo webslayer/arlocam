@@ -58,7 +58,7 @@ class ArloWrap:
 
     def snap_timeout(self):
         try:
-            func_timeout(30, self.take_snapshot)
+            func_timeout(50, self.take_snapshot)
 
         except FunctionTimedOut:
             print("timed out")
