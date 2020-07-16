@@ -5,7 +5,6 @@ import urllib
 
 from fastapi import BackgroundTasks, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
 
 from .arlo_wrap import ArloWrap
 from .db import db
