@@ -31,9 +31,9 @@ class ArloWrap:
             start = time.time()
 
             # Trigger the snapshot.
-            url = self.arlo.TriggerFullFrameSnapshot(self.basestation, self.camera)
+            url = self.trigger_timeout()
 
-            if url is not None:
+            if url:
                 timezone = pytz.timezone("Europe/London")
                 now = datetime.now(timezone).replace(microsecond=0)
                 fname = f"snapshot-{now.isoformat()}.jpg"
@@ -48,6 +48,7 @@ class ArloWrap:
                 sftp.upload_snaphot(url, fname)
 
                 print("uploaded shot")
+
             else:
                 print("skipped, url not found")
 
@@ -56,12 +57,19 @@ class ArloWrap:
         except Exception as e:
             print(e)
 
-    def snap_timeout(self):
+    def trigger_timeout(self):
         try:
-            func_timeout(50, self.take_snapshot)
+            url = func_timeout(
+                45,
+                self.arlo.TriggerFullFrameSnapshot,
+                args=(self.basestation, self.camera),
+            )
 
         except FunctionTimedOut:
             print("timed out")
+            url = None
+
+        return url
 
     def start_stream(self):
         try:
