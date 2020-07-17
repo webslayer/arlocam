@@ -38,16 +38,14 @@ class ArloWrap:
                 now = datetime.now(timezone).replace(microsecond=0)
                 fname = f"snapshot-{now.isoformat()}.jpg"
 
+                sftp = SFTP()
+                sftp.upload_snaphot(url, fname)
+                print("uploaded shot")
+
                 result = db.snapshots.insert_one(
                     {"file_name": fname, "created_date": now}
                 )
-
                 print(f"Data inserted with record ids: {result.inserted_id}")
-
-                sftp = SFTP()
-                sftp.upload_snaphot(url, fname)
-
-                print("uploaded shot")
 
             else:
                 print("skipped, url not found")

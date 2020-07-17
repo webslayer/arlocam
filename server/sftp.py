@@ -37,7 +37,6 @@ class SFTP:
         """
 
         req_for_image = requests.get(url)
-        # file_object_from_req = req_for_image.raw
         IMAGE_FILE = BytesIO(req_for_image.content)
 
         img = Image.open(IMAGE_FILE)
