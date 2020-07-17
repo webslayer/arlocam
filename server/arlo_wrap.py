@@ -58,7 +58,7 @@ class ArloWrap:
     def trigger_timeout(self):
         try:
             url = func_timeout(
-                45,
+                55,
                 self.arlo.TriggerFullFrameSnapshot,
                 args=(self.basestation, self.camera),
             )
