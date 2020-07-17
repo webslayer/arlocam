@@ -38,9 +38,9 @@ class ArloWrap:
                 now = datetime.now(timezone).replace(microsecond=0)
                 fname = f"snapshot-{now.isoformat()}.jpg"
 
-                sftp = SFTP()
-                sftp.upload_snaphot(url, fname)
-                print("uploaded shot")
+                with SFTP() as sftp:
+                    sftp.upload_snaphot(url, fname)
+                    print("uploaded shot")
 
                 result = db.snapshots.insert_one(
                     {"file_name": fname, "created_date": now}
@@ -58,7 +58,7 @@ class ArloWrap:
     def trigger_timeout(self):
         try:
             url = func_timeout(
-                55,
+                60,
                 self.arlo.TriggerFullFrameSnapshot,
                 args=(self.basestation, self.camera),
             )
