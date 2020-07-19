@@ -55,7 +55,9 @@ class SFTP:
         print("compressed")
 
         # Do the actual upload
-        file_attr = self.sftp.putfo(buffer, self.remote_snaphot_path + filename)
-        print(file_attr)
+        file_attr = self.sftp.putfo(
+            buffer, self.remote_snaphot_path + filename, confirm=False
+        )
+        print("file size: {file_attr.st_size}")
 
         return file_attr
