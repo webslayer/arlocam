@@ -5,6 +5,9 @@ import paramiko
 import requests
 from PIL import Image
 
+paramiko.util.log_to_file("paramiko.log")
+paramiko.sftp_file.SFTPFile.MAX_REQUEST_SIZE = 1024
+
 
 class SFTP:
     """sftp utils"""
@@ -21,9 +24,14 @@ class SFTP:
     remote_timelapse_path = "/silverene/wp-content/uploads/timelapse/"
 
     def __enter__(self):
+        MAX_TRANSFER_SIZE = 1024
         self.transport = paramiko.Transport((self.host, self.port))
         self.transport.connect(None, self.username, self.password)
-        self.sftp = paramiko.SFTPClient.from_transport(self.transport)
+        self.sftp = paramiko.SFTPClient.from_transport(
+            self.transport,
+            window_size=MAX_TRANSFER_SIZE,
+            max_packet_size=MAX_TRANSFER_SIZE,
+        )
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -58,6 +66,6 @@ class SFTP:
         file_attr = self.sftp.putfo(
             buffer, self.remote_snaphot_path + filename, confirm=False
         )
-        print("file size: {file_attr.st_size}")
+        print(f"file size: {file_attr.st_size}")
 
         return file_attr
