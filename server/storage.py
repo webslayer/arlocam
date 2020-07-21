@@ -1,10 +1,13 @@
 import logging
+import urllib
 from io import BytesIO
 
 import boto3
 import requests
 from botocore.exceptions import ClientError
 from PIL import Image
+
+from .sftp import SFTP
 
 
 def upload_image_file(url, bucket, file_name, quality=60):
@@ -98,3 +101,19 @@ def create_presigned_url(bucket_name, object_name, expiration=36000):
 
     # The response contains the presigned URL
     return response
+
+
+def transfer_sftp_to_s3():
+
+    with SFTP() as sftp:
+        files = sftp.sftp.listdir(path=sftp.remote_snaphot_path)
+        for file_name in files:
+            url = (
+                "https://silverene.info/wp-content/uploads/snapshots/"
+                + urllib.parse.quote(file_name)
+            )
+            upload_image_file(url, "arlocam-snapshots", file_name, quality=95)
+
+            print(f"uploaded shot: {file_name}")
+
+    print("transfered all snapshot")
