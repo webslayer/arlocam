@@ -115,7 +115,7 @@ def transfer_sftp_to_s3():
             try:
                 upload_image_file(url, "arlocam-snapshots", file_name, quality=95)
             except:
-                print(f"uploaded shot: {file_name}")
+                print(f"skipped shot: {file_name}")
 
             print(f"uploaded shot: {file_name}")
 
