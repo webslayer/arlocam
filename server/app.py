@@ -11,6 +11,7 @@ from .arlo_wrap import ArloWrap
 from .db import db
 from .models import DateRange
 from .sftp import SFTP
+from .storage import upload_image_file
 from .timelapse import create_timelapse
 
 app = FastAPI()
@@ -59,6 +60,22 @@ def snapstop():
 
     db.snapjobs.update_one({"_id": 1}, {"$set": {"started": False}})
     return "successfully stopped"
+
+
+@app.get("/transfer")
+def transfer():
+
+    with SFTP() as sftp:
+        files = sftp.sftp.listdir(path=sftp.remote_snaphot_path)
+        for file_name in files:
+            url = (
+                "https://silverene.info/wp-content/uploads/snapshots/"
+                + urllib.parse.quote(file_name)
+            )
+            upload_image_file(url, "arlocam-snapshots", file_name, quality=95)
+
+            print(f"uploaded shot: {file_name}")
+    return "transfered all snapshot"
 
 
 @app.get("/resume")

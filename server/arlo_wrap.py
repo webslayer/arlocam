@@ -43,7 +43,7 @@ class ArloWrap:
                 #     sftp.upload_snaphot(url, fname)
                 upload_image_file(url, "arlocam-snapshots", fname)
 
-                print("uploaded shot")
+                print(f"uploaded shot: {fname}")
 
                 result = db.snapshots.insert_one(
                     {"file_name": fname, "created_date": now}

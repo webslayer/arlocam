@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from PIL import Image
 
 
-def upload_image_file(url, bucket, file_name):
+def upload_image_file(url, bucket, file_name, quality=60):
     """
     Function to upload a file to an S3 bucket
     """
@@ -18,7 +18,7 @@ def upload_image_file(url, bucket, file_name):
     im1 = Image.open(IMAGE_FILE)
     # here, we create an empty string buffer
     buffer = BytesIO()
-    im1.save(buffer, "JPEG", quality=60)
+    im1.save(buffer, "JPEG", quality=quality)
     buffer.seek(0)
     print("compressed")
 
