@@ -9,6 +9,7 @@ from arlo import Arlo
 
 from .db import db
 from .sftp import SFTP
+from .storage import upload_image_file
 
 
 class ArloWrap:
@@ -38,9 +39,11 @@ class ArloWrap:
                 now = datetime.now(timezone).replace(microsecond=0)
                 fname = f"snapshot-{now.isoformat()}.jpg"
 
-                with SFTP() as sftp:
-                    sftp.upload_snaphot(url, fname)
-                    print("uploaded shot")
+                # with SFTP() as sftp:
+                #     sftp.upload_snaphot(url, fname)
+                upload_image_file(url, "arlocam-snapshots", fname)
+
+                print("uploaded shot")
 
                 result = db.snapshots.insert_one(
                     {"file_name": fname, "created_date": now}

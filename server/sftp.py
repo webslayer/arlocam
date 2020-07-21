@@ -66,6 +66,5 @@ class SFTP:
         file_attr = self.sftp.putfo(
             buffer, self.remote_snaphot_path + filename, confirm=False
         )
-        print(f"file size: {file_attr.st_size}")
 
         return file_attr

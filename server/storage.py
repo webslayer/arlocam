@@ -13,7 +13,6 @@ def upload_image_file(url, bucket, file_name):
     """
     s3 = boto3.client("s3")
     req_for_image = requests.get(url)
-    # file_object_from_req = req_for_image.raw
     IMAGE_FILE = BytesIO(req_for_image.content)
 
     im1 = Image.open(IMAGE_FILE)

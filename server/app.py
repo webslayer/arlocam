@@ -3,6 +3,7 @@ import signal
 import subprocess
 import urllib
 
+import boto3
 from fastapi import BackgroundTasks, FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -85,11 +86,33 @@ async def timelapse(daterange: DateRange, background_tasks: BackgroundTasks):
 def get_timelapse():
     links = dict()
 
+    # SFTP
+    # for i, doc in enumerate(db.timelapse.find()):
+    #     url = (
+    #         "https://silverene.info/wp-content/uploads/timelapse/"
+    #         + urllib.parse.quote(doc["file_name"])
+    #     )
+    #     links[f"video{i}"] = {
+    #         "title": doc["file_name"],
+    #         "url": url,
+    #         "datefrom": doc["datefrom"].strftime("%d%m%Y"),
+    #         "dateto": doc["dateto"].strftime("%d%m%Y"),
+    #     }
+
+    # S3
+    s3_client = boto3.client(
+        "s3",
+        config=boto3.session.Config(
+            s3={"addressing_style": "path"}, signature_version="s3v4"
+        ),
+        region_name="eu-west-2",
+    )
+
+    bucket_name = "arlocam-timelapse"
+
     for i, doc in enumerate(db.timelapse.find()):
-        url = (
-            "https://silverene.info/wp-content/uploads/timelapse/"
-            + urllib.parse.quote(doc["file_name"])
-        )
+        params = {"Bucket": bucket_name, "Key": doc["file_name"]}
+        url = s3_client.generate_presigned_url("get_object", params, ExpiresIn=604000)
         links[f"video{i}"] = {
             "title": doc["file_name"],
             "url": url,
@@ -102,11 +125,10 @@ def get_timelapse():
 
 @app.get("/del_timelapse")
 def del_timelapse():
-    with SFTP() as sftp:
-        files = sftp.sftp.listdir(path=sftp.remote_timelapse_path)
-        for file_name in files:
-            sftp.sftp.remove(sftp.remote_timelapse_path + file_name)
-            db.timelapse.delete_one({"file_name": file_name})
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket("arlocam-timelapse")
+    bucket.objects.all().delete()
+    db.timelapse.remove({})
     return "deleted all timelapse"
 
 
