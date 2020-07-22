@@ -166,6 +166,15 @@ async def timelapse_progress():
     # StreamingResponse(stream_progress(), media_type="text/event-stream")
 
 
+@app.get("/sys")
+def sys():
+    os.system("systemctl start scheduler.service")
+
+    os.system("systemctl status scheduler.service")
+
+    return "started"
+
+
 @app.get("/start_stream")
 def start_stream():
     arlo = ArloWrap()
